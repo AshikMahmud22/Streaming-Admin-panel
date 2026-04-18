@@ -5,6 +5,7 @@ import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
+import { LuSquareDashedKanban } from "react-icons/lu";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
@@ -83,17 +84,11 @@ const AppHeader: React.FC = () => {
             {/* Cross Icon */}
           </button>
 
-          <Link to="/" className="lg:hidden">
-            <img
-              className="dark:hidden"
-              src="./images/logo/logo.svg"
-              alt="Logo"
-            />
-            <img
-              className="hidden dark:block"
-              src="./images/logo/logo-dark.svg"
-              alt="Logo"
-            />
+          <Link to="/" className="lg:hidden flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-950 rounded-lg flex items-center justify-center text-white font-bold rotate-180">
+              <LuSquareDashedKanban size={24}  />
+            </div>
+            <h1 className="font-bold text-xl dark:text-white">AdminPanel</h1>
           </Link>
 
           <button

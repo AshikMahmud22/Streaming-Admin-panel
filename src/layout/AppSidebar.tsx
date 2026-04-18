@@ -6,6 +6,7 @@ import {
   Building2, MessageSquare, Palette, Settings, Gamepad2, FileText
 } from "lucide-react";
 import { useSidebar } from "../context/SidebarContext";
+import { LuSquareDashedKanban } from "react-icons/lu";
 
 type NavItem = {
   name: string;
@@ -76,7 +77,7 @@ const AppSidebar: React.FC = () => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="p-6 flex items-center gap-3">
-        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">L</div>
+        <div className="w-8 h-8 bg-blue-950 rounded-lg flex items-center rotate-180 justify-center text-white font-bold"> <LuSquareDashedKanban size={24}  /></div>
         {(isExpanded || isHovered || isMobileOpen) && <span className="font-bold text-xl dark:text-white">AdminPanel</span>}
       </div>
 
