@@ -19,6 +19,8 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import UserList from "./pages/UserList/UserList";
+import GiftingManager from "./pages/Gifting/GiftingManager";
+import EmojiManager from "./pages/Emoji/EmojiManager";
 
 export default function App() {
   return (
@@ -32,6 +34,8 @@ export default function App() {
 
             
             <Route path="/users" element={<UserList />} />
+            <Route path="/gifts" element={<GiftingManager />} />
+            <Route path="/emojis" element={<EmojiManager />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
