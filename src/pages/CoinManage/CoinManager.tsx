@@ -91,7 +91,7 @@ export default function CoinManager() {
       </div>
 
       {selectedUser && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-40 flex items-center justify-center lg:pl-60 dark:bg-black/80 bg-black/20  backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div 
             className="absolute inset-0" 
             onClick={() => setSelectedUser(null)} 

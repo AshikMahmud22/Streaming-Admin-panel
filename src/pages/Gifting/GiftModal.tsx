@@ -49,7 +49,7 @@ export const GiftModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-10 flex items-center justify-center p-4  backdrop-blur-md lg:pl-64">
+    <div className="fixed inset-0 z-10 flex items-center justify-center p-4  backdrop-blur-md lg:pl-64 dark:bg-black/80 bg-black/20 ">
       <div className=" dark:bg-gray-900 bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative border md:border-gray-100 dark:border-gray-800">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-black dark:text-white">

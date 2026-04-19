@@ -15,7 +15,7 @@ interface EmojiCardProps {
 
 export const EmojiCard = ({ emoji, onEdit, onDelete }: EmojiCardProps) => {
   return (
-    <div className="border dark:border-gray-800 rounded-2xl p-5 w-50  flex flex-col items-center group dark:hover:border-gray-700 transition-all">
+    <div className="border dark:border-gray-800 rounded-2xl p-5 md:w-50   flex flex-col items-center group dark:hover:border-gray-700 transition-all">
       <div className="w-16 h-16 flex items-center justify-center mb-3">
         <img src={emoji.url} alt={emoji.name} className="w-full h-full object-contain" />
       </div>

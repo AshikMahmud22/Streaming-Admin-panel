@@ -10,7 +10,7 @@ interface IdEntryCardProps {
 
 export const IdEntryCard = ({ entry, onEdit, onDelete }: IdEntryCardProps) => {
   return (
-    <div className="group relative border dark:border-gray-800 w-50 rounded-3xl p-4 transition-all hover:shadow-xl bg-white dark:bg-gray-900">
+    <div className="group relative border dark:border-gray-800 md:w-50 rounded-3xl p-4 transition-all hover:shadow-xl bg-white dark:bg-gray-900">
       <div className="aspect-square rounded-2xl bg-gray-100 dark:bg-gray-800 mb-4 flex items-center justify-center overflow-hidden border dark:border-none">
         {entry.type === "png" ? (
           <img 

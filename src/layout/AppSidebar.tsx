@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { useSidebar } from "../context/SidebarContext";
 import { LuSquareDashedKanban } from "react-icons/lu";
+import { GiLevelEndFlag } from "react-icons/gi";
+
 
 type NavItem = {
   name: string;
@@ -46,6 +48,7 @@ const navItems: NavItem[] = [
       { name: "Emojis", path: "/emojis", icon: <Smile size={18} /> },
       { name: "Frames", path: "/frames", icon: <ImageIcon size={18} /> },
       { name: "ID Entry", path: "/id-entry", icon: <TrendingUp size={18} /> },
+      { name: "Level Badge", path: "/level-badge-manage", icon: <GiLevelEndFlag  size={18} /> },
     ],
   },
   {

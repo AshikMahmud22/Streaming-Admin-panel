@@ -37,7 +37,7 @@ export const ActionPanel = ({ selectedUser, onClose }: ActionPanelProps) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-[2.5rem] p-6 md:p-8 shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
+    <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-[2.5rem] p-6 md:p-8 shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5 ">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-black dark:text-white tracking-tight">Modify Balance</h3>
         <button 

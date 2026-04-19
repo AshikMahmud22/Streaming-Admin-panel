@@ -141,7 +141,7 @@ export default function FrameManager() {
   );
 
   return (
-    <div className="p-8 min-h-screen">
+    <div className=" min-h-screen">
       <div className="flex justify-between items-end mb-10">
         <div>
           <h1 className="text-2xl font-bold dark:text-white text-black">
@@ -151,20 +151,12 @@ export default function FrameManager() {
             Manage SVGA and PNG frame overlays
           </p>
         </div>
-        <button
-          onClick={() => {
-            setEditData(null);
-            setIsModalOpen(true);
-          }}
-          className="dark:bg-black dark:text-white border dark:border-gray-800  bg-white  text-black px-6 py-2 rounded-xl text-sm font-bold flex items-center gap-2 "
-        >
-          <Plus size={18} /> Add Frame
-        </button>
+       
       </div>
 
-      <div className="mb-8 max-w-xs">
+      <div className="mb-8 flex gap-3 text-nowrap justify-between items-center">
         <select
-          className="w-full p-3 border dark:border-gray-800 rounded-xl outline-none text-sm bg-transparent dark:text-white text-black"
+          className="w-full p-3 border dark:border-gray-800 rounded-xl outline-none text-sm bg-transparent dark:text-white text-black md:max-w-xs"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         >
@@ -173,6 +165,15 @@ export default function FrameManager() {
           <option className="text-black" value="Premium">Premium</option>
           <option className="text-black" value="Event">Event</option>
         </select>
+         <button
+          onClick={() => {
+            setEditData(null);
+            setIsModalOpen(true);
+          }}
+          className="dark:bg-black dark:text-white border dark:border-gray-800  bg-white  text-black px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 "
+        >
+          <Plus size={18} /> Add Frame
+        </button>
       </div>
 
       {loading ? (

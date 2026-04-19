@@ -10,7 +10,7 @@ interface FrameCardProps {
 
 export const FrameCard = ({ frame, onEdit, onDelete }: FrameCardProps) => {
   return (
-    <div className="group relative border dark:border-gray-800 rounded-3xl w-50 p-4 transition-all hover:shadow-xl bg-white dark:bg-gray-900 flex flex-col h-full">
+    <div className="group relative border dark:border-gray-800 rounded-3xl p-4 transition-all hover:shadow-xl md:w-50  bg-white dark:bg-gray-900 flex flex-col h-full">
       <div className=" rounded-2xl bg-gray-100 dark:bg-gray-800 mb-4 flex items-center justify-center overflow-hidden">
         {frame.type === "png" ? (
           <img

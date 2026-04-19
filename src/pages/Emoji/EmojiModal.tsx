@@ -35,7 +35,7 @@ export const EmojiModal = ({ isOpen, onClose, onSubmit, isUploading, initialData
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-10 flex items-center justify-center p-4   backdrop-blur-sm lg:pl-64 dark:bg-black/80 ">
+    <div className="fixed inset-0 z-10 flex items-center justify-center p-4   backdrop-blur-sm lg:pl-64 dark:bg-black/80 bg-black/20 ">
       <div className=" w-full max-w-md  rounded-[2rem] p-8 border dark:bg-gray-900 dark:border-gray-800 shadow-2xl bg-white">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold dark:text-white text-black">{initialData ? "Edit Emoji" : "Add New Emoji"}</h2>

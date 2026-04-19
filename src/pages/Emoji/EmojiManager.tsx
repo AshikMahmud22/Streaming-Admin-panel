@@ -135,7 +135,7 @@ export default function EmojiManager() {
   const categoriesCount = new Set(emojis.map((e) => e.category)).size;
 
   return (
-    <div className="p-8 min-h-screen text-white">
+    <div className="md:p-8 min-h-screen text-white">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-12">
         <div className="p-6 rounded-2xl border dark:border-gray-800">
           <p className="text-gray-500 text-xs font-bold uppercase mb-1">
@@ -199,7 +199,7 @@ export default function EmojiManager() {
             setEditData(null);
             setIsModalOpen(true);
           }}
-          className="border dark:border-gray-700 px-6 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all text-black dark:text-white"
+          className="border dark:border-gray-800 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all text-black dark:text-white"
         >
           <Plus size={18} /> Add emoji
         </button>
