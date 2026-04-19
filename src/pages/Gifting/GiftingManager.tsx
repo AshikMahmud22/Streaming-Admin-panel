@@ -89,7 +89,7 @@ export default function GiftingManager() {
 
   const handleDelete = async (id: string) => {
     toast((t) => (
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 " >
         <span className="text-sm font-bold">Remove asset?</span>
         <div className="flex gap-2">
           <button
@@ -117,7 +117,7 @@ export default function GiftingManager() {
   };
 
   return (
-    <div className=" max-w-7xl mx-auto min-h-screen mt-5">
+    <div className="  min-h-screen mt-5">
       <div className="flex justify-between items-center mb-10"> 
         <div className="flex items-center gap-2">
           <Sparkles className="text-blue-500" size={36} />
@@ -132,7 +132,7 @@ export default function GiftingManager() {
         
         <button
           onClick={() => { setEditData(null); setIsModalOpen(true); }}
-          className="bg-blue-950 hover:bg-blue-900 text-white md:px-8 md:py-4 rounded-2xl font-semibold px-4 py-4 flex items-center gap-2 md:shadow-xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+          className="dark:bg-blue-950 dark:hover:bg-blue-900 dark:text-white  md:px-8 md:py-4 rounded-2xl font-semibold px-4 py-4 flex border dark:border-none items-center gap-2 dark:md:shadow-xl dark:shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
         >
           <Plus size={20} /> Add New Asset
         </button>
