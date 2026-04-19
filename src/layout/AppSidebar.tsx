@@ -66,7 +66,7 @@ const navItems: NavItem[] = [
       { name: "Support Tickets", path: "/support", icon: <MessageSquare size={18} /> },
     ],
   },
-  { name: "Coin & Earnings", icon: <Coins size={22} />, path: "/earnings" },
+  { name: "Coin & Earnings", icon: <Coins size={22} />, path: "/Coin-manage" },
   { name: "Game Control", icon: <Gamepad2 size={22} />, path: "/games" },
   {
     name: "System Settings",

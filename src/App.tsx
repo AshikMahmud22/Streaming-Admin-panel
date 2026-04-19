@@ -23,6 +23,7 @@ import GiftingManager from "./pages/Gifting/GiftingManager";
 import EmojiManager from "./pages/Emoji/EmojiManager";
 import IdEntryManager from "./pages/IdEntry/IdEntryManager";
 import FrameManager from "./pages/Frame/FrameManager";
+import CoinManager from "./pages/CoinManage/CoinManager";
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/emojis" element={<EmojiManager />} />
             <Route path="/id-entry" element={<IdEntryManager />} />
             <Route path="/frames" element={<FrameManager />} />
+            <Route path="/Coin-manage" element={<CoinManager />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
