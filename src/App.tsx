@@ -25,6 +25,7 @@ import IdEntryManager from "./pages/IdEntry/IdEntryManager";
 import FrameManager from "./pages/Frame/FrameManager";
 import CoinManager from "./pages/CoinManage/CoinManager";
 import LevelBadgeManager from "./pages/LevelBadgeManage/LevelBadgeManager";
+import RoomThemeManager from "./pages/RoomThemeManage/RoomThemeManager";
 
 export default function App() {
   return (
@@ -44,6 +45,7 @@ export default function App() {
             <Route path="/frames" element={<FrameManager />} />
             <Route path="/Coin-manage" element={<CoinManager />} />
             <Route path="/level-badge-manage" element={<LevelBadgeManager />} />
+            <Route path="/room-skins" element={<RoomThemeManager />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
