@@ -6,32 +6,41 @@ import {
   doc,
   deleteDoc,
   query,
-  orderBy,
+  Timestamp,
 } from "firebase/firestore";
 import { Plus, Loader2, Palette } from "lucide-react";
 import toast from "react-hot-toast";
-import ThemeCard from "./ThemeCard";
-import ThemeModal from "./ThemeModal";
+import ThemeCard from "./SkinCard";
+import ThemeModal from "./SkinModal";
 
 export interface RoomTheme {
   id: string;
-  themeId: number;
   url: string;
   name: string;
-  price: number;
+  createdAt?: Timestamp;
 }
 
-export default function RoomThemeManager() {
+export default function RoomSkinManager() {
   const [themes, setThemes] = useState<RoomTheme[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTheme, setEditingTheme] = useState<RoomTheme | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, "room_themes"), orderBy("themeId", "asc"));
+    const q = query(collection(db, "room_skin"));
     const unsubscribe = onSnapshot(q, (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() } as RoomTheme));
-      setThemes(data);
+      const data = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data()
+      } as RoomTheme));
+
+      const sortedData = [...data].sort((a, b) => {
+        const dateA = a.createdAt ? a.createdAt.toMillis() : 0;
+        const dateB = b.createdAt ? b.createdAt.toMillis() : 0;
+        return dateB - dateA;
+      });
+
+      setThemes(sortedData);
       setLoading(false);
     });
     return () => unsubscribe();
@@ -49,7 +58,7 @@ export default function RoomThemeManager() {
               toast.dismiss(t.id);
               const loadingId = toast.loading("Deleting...");
               try {
-                await deleteDoc(doc(db, "room_themes", id));
+                await deleteDoc(doc(db, "room_skin", id));
                 toast.success("Skin deleted", { id: loadingId });
               } catch {
                 toast.error("Delete failed", { id: loadingId });
@@ -85,7 +94,7 @@ export default function RoomThemeManager() {
 
   return (
     <div className="min-h-screen">
-      <div className="flex flex-row justify-between items-center gap-4 mb-10">
+      <div className="flex flex-row justify-between items-center gap-4 my-10 ">
         <div>
           <h1 className="text-2xl font-bold dark:text-white text-black flex items-center gap-2">
             <Palette className="text-blue-500" /> Room Skins

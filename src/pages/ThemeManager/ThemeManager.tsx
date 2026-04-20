@@ -8,44 +8,42 @@ import {
   query,
   Timestamp,
 } from "firebase/firestore";
-import { Plus, Loader2, Shield } from "lucide-react";
+import { Plus, Loader2, Palette } from "lucide-react";
 import toast from "react-hot-toast";
-import BadgeCard from "./BadgeCard";
-import BadgeModal from "./BadgeModal";
+import ThemeModal from "./ThemeModal";
+import ThemeCard from "./ThemeCards";
 
-export interface LevelBadge {
+export interface Theme {
   id: string;
-  level: number;
   url: string;
   name: string;
+  price: number;
   createdAt?: Timestamp;
 }
 
-export default function LevelBadgeManager() {
-  const [badges, setBadges] = useState<LevelBadge[]>([]);
+export default function ThemeManager() {
+  const [themes, setThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingBadge, setEditingBadge] = useState<LevelBadge | null>(null);
+  const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, "level_badges"));
-    
+    const q = query(collection(db, "themes"));
     const unsubscribe = onSnapshot(q, (snap) => {
-      const data = snap.docs.map((d) => ({ 
-        id: d.id, 
-        ...d.data() 
-      } as LevelBadge));
+      const data = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data()
+      } as Theme));
 
-      const sortedData = data.sort((a, b) => {
-        const timeA = a.createdAt?.toMillis() || 0;
-        const timeB = b.createdAt?.toMillis() || 0;
-        return timeB - timeA;
+      const sortedData = [...data].sort((a, b) => {
+        const dateA = a.createdAt ? a.createdAt.toMillis() : 0;
+        const dateB = b.createdAt ? b.createdAt.toMillis() : 0;
+        return dateB - dateA;
       });
 
-      setBadges(sortedData);
+      setThemes(sortedData);
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -53,7 +51,7 @@ export default function LevelBadgeManager() {
     toast((t) => (
       <div className="flex flex-col gap-3 min-w-[220px]">
         <p className="text-sm font-bold leading-tight">
-          Are you sure you want to delete this badge?
+          Delete this theme permanently?
         </p>
         <div className="flex gap-2">
           <button
@@ -61,8 +59,8 @@ export default function LevelBadgeManager() {
               toast.dismiss(t.id);
               const loadingId = toast.loading("Deleting...");
               try {
-                await deleteDoc(doc(db, "level_badges", id));
-                toast.success("Badge deleted", { id: loadingId });
+                await deleteDoc(doc(db, "themes", id));
+                toast.success("Theme deleted", { id: loadingId });
               } catch {
                 toast.error("Delete failed", { id: loadingId });
               }
@@ -85,30 +83,30 @@ export default function LevelBadgeManager() {
     });
   };
 
-  const openEdit = (badge: LevelBadge) => {
-    setEditingBadge(badge);
+  const openEdit = (theme: Theme) => {
+    setEditingTheme(theme);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setEditingBadge(null);
+    setEditingTheme(null);
   };
 
   return (
     <div className="min-h-screen">
-      <div className="flex flex-row justify-between items-center gap-4 mb-10">
+      <div className="flex flex-row justify-between items-center gap-4 my-10 ">
         <div>
           <h1 className="text-2xl font-bold dark:text-white text-black flex items-center gap-2">
-            <Shield className="text-blue-500" /> Level Badges
+            <Palette className="text-blue-500" /> App Themes
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Manage ranking system visual rewards</p>
+          <p className="text-gray-500 text-sm mt-1">Manage global shop themes</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center border rounded-2xl w-44 h-12 dark:text-white justify-center dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all font-bold text-sm shadow-sm active:scale-95"
+          className="flex items-center border rounded-2xl w-12 h-12 md:w-44 dark:text-white justify-center dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all font-bold text-sm shadow-sm active:scale-95"
         >
-          <Plus size={18} className="mr-2" /> Add New Badge
+          <Plus size={20} /> <span className="hidden md:inline ml-2">Add New Theme</span>
         </button>
       </div>
 
@@ -117,23 +115,23 @@ export default function LevelBadgeManager() {
           <Loader2 className="animate-spin text-gray-400" size={40} />
         </div>
       ) : (
-        <div className="md:flex md:flex-wrap grid grid-cols-2 pt-5 gap-8 justify-center">
-          {badges.map((badge) => (
-            <BadgeCard
-              key={badge.id}
-              badge={badge}
-              onEdit={() => openEdit(badge)}
-              onDelete={() => handleDelete(badge.id)}
+        <div className="md:flex md:flex-wrap grid grid-cols-2 pt-5 gap-8 justify-center ">
+          {themes.map((theme) => (
+            <ThemeCard
+              key={theme.id}
+              theme={theme}
+              onEdit={() => openEdit(theme)}
+              onDelete={() => handleDelete(theme.id)}
             />
           ))}
         </div>
       )}
 
       {isModalOpen && (
-        <BadgeModal
+        <ThemeModal
           isOpen={isModalOpen}
           onClose={closeModal}
-          editingBadge={editingBadge}
+          editingTheme={editingTheme}
         />
       )}
     </div>

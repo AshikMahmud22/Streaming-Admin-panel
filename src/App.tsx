@@ -25,7 +25,10 @@ import IdEntryManager from "./pages/IdEntry/IdEntryManager";
 import FrameManager from "./pages/Frame/FrameManager";
 import CoinManager from "./pages/CoinManage/CoinManager";
 import LevelBadgeManager from "./pages/LevelBadgeManage/LevelBadgeManager";
-import RoomThemeManager from "./pages/RoomThemeManage/RoomThemeManager";
+import AgencyManager from "./pages/Agency/AgencyManager";
+import AgencyDetails from "./pages/Agency/AgencyDetails";
+import ThemeManager from "./pages/ThemeManager/ThemeManager";
+import RoomSkinManager from "./pages/RoomThemeManage/RoomSkinManager";
 
 export default function App() {
   return (
@@ -37,7 +40,6 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route index path="/" element={<Home />} />
 
-            
             <Route path="/users" element={<UserList />} />
             <Route path="/gifts" element={<GiftingManager />} />
             <Route path="/emojis" element={<EmojiManager />} />
@@ -45,7 +47,10 @@ export default function App() {
             <Route path="/frames" element={<FrameManager />} />
             <Route path="/Coin-manage" element={<CoinManager />} />
             <Route path="/level-badge-manage" element={<LevelBadgeManager />} />
-            <Route path="/room-skins" element={<RoomThemeManager />} />
+            <Route path="/room-skins" element={<RoomSkinManager />} />
+            <Route path="/agencies" element={<AgencyManager />} />
+            <Route path="/agency/:id" element={<AgencyDetails />} />
+            <Route path="/theme-upload" element={<ThemeManager />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

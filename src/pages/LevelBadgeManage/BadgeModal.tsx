@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { db } from "../../lib/firebase";
-import { collection, doc, addDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, addDoc, updateDoc, serverTimestamp, FieldValue } from "firebase/firestore";
 import { Upload, Loader2, X, Image as ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { LevelBadge } from "./LevelBadgeManager";
@@ -9,6 +9,13 @@ interface BadgeModalProps {
   isOpen: boolean;
   onClose: () => void;
   editingBadge: LevelBadge | null;
+}
+
+interface BadgeData {
+  level: number;
+  name: string;
+  url: string;
+  createdAt?: FieldValue;
 }
 
 export default function BadgeModal({ onClose, editingBadge }: BadgeModalProps) {
@@ -50,17 +57,24 @@ export default function BadgeModal({ onClose, editingBadge }: BadgeModalProps) {
         finalUrl = result.secure_url;
       }
 
-      const badgeData = {
+      const badgeData: BadgeData = {
         level: Number(level),
         name: name || `Level ${level}`,
         url: finalUrl,
       };
 
       if (editingBadge) {
-        await updateDoc(doc(db, "level_badges", editingBadge.id), badgeData);
+        await updateDoc(doc(db, "level_badges", editingBadge.id), {
+          level: badgeData.level,
+          name: badgeData.name,
+          url: badgeData.url
+        });
         toast.success("Badge updated", { id: tid });
       } else {
-        await addDoc(collection(db, "level_badges"), badgeData);
+        await addDoc(collection(db, "level_badges"), {
+          ...badgeData,
+          createdAt: serverTimestamp(),
+        });
         toast.success("Badge added", { id: tid });
       }
 
@@ -86,7 +100,7 @@ export default function BadgeModal({ onClose, editingBadge }: BadgeModalProps) {
         <div className="space-y-6">
           <div
             onClick={() => document.getElementById("badge-upload")?.click()}
-            className="aspect-square w-40 mx-auto border-4 border-dashed border-gray-100 dark:border-gray-800 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all group relative overflow-hidden"
+            className="aspect-square w-40 mx-auto border-4 border-dashed border-gray-200 dark:border-gray-800 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all group relative overflow-hidden"
           >
             {preview ? (
               <img src={preview} className="w-full h-full object-contain p-4 transition-transform group-hover:scale-110" alt="" />
