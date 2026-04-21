@@ -7,6 +7,7 @@ import {
   deleteDoc,
   query,
   Timestamp,
+  where,
 } from "firebase/firestore";
 import { Plus, Loader2, Palette } from "lucide-react";
 import toast from "react-hot-toast";
@@ -15,8 +16,9 @@ import ThemeModal from "./SkinModal";
 
 export interface RoomTheme {
   id: string;
-  url: string;
+  imageURL: string;
   name: string;
+  category: string;
   createdAt?: Timestamp;
 }
 
@@ -27,7 +29,7 @@ export default function RoomSkinManager() {
   const [editingTheme, setEditingTheme] = useState<RoomTheme | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, "room_skin"));
+    const q = query(collection(db, "store"), where("category", "==", "RoomSkin"));
     const unsubscribe = onSnapshot(q, (snap) => {
       const data = snap.docs.map((d) => ({
         id: d.id,
@@ -58,7 +60,7 @@ export default function RoomSkinManager() {
               toast.dismiss(t.id);
               const loadingId = toast.loading("Deleting...");
               try {
-                await deleteDoc(doc(db, "room_skin", id));
+                await deleteDoc(doc(db, "store", id));
                 toast.success("Skin deleted", { id: loadingId });
               } catch {
                 toast.error("Delete failed", { id: loadingId });
@@ -70,7 +72,7 @@ export default function RoomSkinManager() {
           </button>
           <button
             onClick={() => toast.dismiss(t.id)}
-            className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white px-4 py-2 rounded-xl text-xs font-bold transition-transform active:scale-95"
+            className="bg-gray-200  text-black  px-4 py-2 rounded-xl text-xs font-bold transition-transform active:scale-95"
           >
             Cancel
           </button>

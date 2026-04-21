@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { db } from "../../lib/firebase";
-import { collection, doc, addDoc, updateDoc, serverTimestamp, FieldValue } from "firebase/firestore";
+import { collection, doc, addDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { Upload, Loader2, X, Image as ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { LevelBadge } from "./LevelBadgeManager";
@@ -11,19 +11,12 @@ interface BadgeModalProps {
   editingBadge: LevelBadge | null;
 }
 
-interface BadgeData {
-  level: number;
-  name: string;
-  url: string;
-  createdAt?: FieldValue;
-}
-
 export default function BadgeModal({ onClose, editingBadge }: BadgeModalProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [level, setLevel] = useState(editingBadge?.level.toString() || "");
   const [name, setName] = useState(editingBadge?.name || "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>(editingBadge?.url || "");
+  const [preview, setPreview] = useState<string>(editingBadge?.imageURL || "");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -43,7 +36,7 @@ export default function BadgeModal({ onClose, editingBadge }: BadgeModalProps) {
     const tid = toast.loading(editingBadge ? "Updating..." : "Uploading...");
 
     try {
-      let finalUrl = preview;
+      let finalUrl = editingBadge?.imageURL || "";
 
       if (selectedFile) {
         const data = new FormData();
@@ -57,22 +50,21 @@ export default function BadgeModal({ onClose, editingBadge }: BadgeModalProps) {
         finalUrl = result.secure_url;
       }
 
-      const badgeData: BadgeData = {
+      const payload = {
         level: Number(level),
         name: name || `Level ${level}`,
-        url: finalUrl,
+        imageURL: finalUrl,
+        category: "LevelBadge",
+        isActive: true,
+        updatedAt: serverTimestamp(),
       };
 
       if (editingBadge) {
-        await updateDoc(doc(db, "level_badges", editingBadge.id), {
-          level: badgeData.level,
-          name: badgeData.name,
-          url: badgeData.url
-        });
+        await updateDoc(doc(db, "store", editingBadge.id), payload);
         toast.success("Badge updated", { id: tid });
       } else {
-        await addDoc(collection(db, "level_badges"), {
-          ...badgeData,
+        await addDoc(collection(db, "store"), {
+          ...payload,
           createdAt: serverTimestamp(),
         });
         toast.success("Badge added", { id: tid });
@@ -87,8 +79,8 @@ export default function BadgeModal({ onClose, editingBadge }: BadgeModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-10 flex items-center justify-center dark:bg-black/70 backdrop-blur-sm p-4 animate-in lg:pl-64 fade-in duration-200 bg-black/20">
-      <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-10 flex items-center justify-center dark:bg-black/70 backdrop-blur-sm p-4 lg:pl-64 bg-black/20">
+      <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative">
         <button onClick={onClose} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 transition-colors">
           <X size={24} />
         </button>
@@ -142,7 +134,7 @@ export default function BadgeModal({ onClose, editingBadge }: BadgeModalProps) {
           <button
             disabled={isUploading}
             onClick={handleSave}
-            className="w-full py-5 dark:bg-blue-950 dark:hover:bg-blue-900 dark:text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 bg-gray-200 hover:bg-gray-100 text-black"
+            className="w-full py-5 dark:bg-blue-950 dark:hover:bg-blue-900 dark:text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 bg-gray-200 hover:bg-gray-100 text-black border dark:border-blue-900"
           >
             {isUploading ? <Loader2 className="animate-spin" /> : editingBadge ? "Update Badge" : "Publish Badge"}
           </button>

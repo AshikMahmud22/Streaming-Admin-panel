@@ -51,15 +51,23 @@ const navItems: NavItem[] = [
       { name: "Level Badge", path: "/level-badge-manage", icon: <GiLevelEndFlag  size={18} /> },
     ],
   },
-  {
-    name: "Live Controls",
-    icon: <Mic size={22} />,
-    subItems: [
-      { name: "Audio Board", path: "/audio-board", icon: <Mic size={18} /> },
-      { name: "Video Board", path: "/video-board", icon: <ImageIcon size={18} /> },
-      { name: "Room Skins", path: "/room-skins", icon: <Palette size={18} /> },
-    ],
-  },
+ {
+  name: "Live Controls",
+  icon: <Mic size={22} />,
+  subItems: [
+    { 
+      name: "Audio Board", 
+      path: "/audio-board", 
+      icon: <Mic size={18} /> 
+    },
+    { 
+      name: "Video Board", 
+      path: "/video-board",
+      icon: <ImageIcon size={18} /> 
+    },
+    { name: "Room Skins", path: "/room-skins", icon: <Palette size={18} /> },
+  ],
+},
   {
     name: "Agency & Support",
     icon: <Building2 size={22} />,

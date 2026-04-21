@@ -10,6 +10,7 @@ import {
   query,
   serverTimestamp,
   Timestamp,
+  where,
 } from "firebase/firestore";
 import { Plus, Loader2 } from "lucide-react";
 import { EmojiCard } from "./EmojiCard";
@@ -19,8 +20,11 @@ import toast from "react-hot-toast";
 interface Emoji {
   id: string;
   name: string;
-  url: string;
+  imageURL: string;
   category: string;
+  subCategory?: string;
+  value?: number;
+  isActive?: boolean;
   createdAt?: Timestamp;
 }
 
@@ -33,21 +37,24 @@ export default function EmojiManager() {
   const [filter, setFilter] = useState("All categories");
 
   useEffect(() => {
-    const q = query(collection(db, "emojis"));
-    const unsubscribe = onSnapshot(q, (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Emoji);
-      const sortedData = data.sort((a, b) => {
-        const timeA = a.createdAt?.toMillis() || Date.now();
-        const timeB = b.createdAt?.toMillis() || Date.now();
-        return timeB - timeA;
-      });
-      setEmojis(sortedData);
-      setLoading(false);
-    }, () => {
-      toast.error("Sync failed");
-      setLoading(false);
-    });
-
+    const q = query(collection(db, "store"), where("category", "==", "Emoji"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => {
+        const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Emoji);
+        const sortedData = data.sort((a, b) => {
+          const timeB = b.createdAt?.toMillis() || 0;
+          const timeA = a.createdAt?.toMillis() || 0;
+          return timeB - timeA;
+        });
+        setEmojis(sortedData);
+        setLoading(false);
+      },
+      () => {
+        toast.error("Sync failed");
+        setLoading(false);
+      },
+    );
     return () => unsubscribe();
   }, []);
 
@@ -57,10 +64,7 @@ export default function EmojiManager() {
     data.append("upload_preset", import.meta.env.VITE_CLOUDINARY_PRESET);
     const res = await fetch(
       `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/upload`,
-      {
-        method: "POST",
-        body: data,
-      },
+      { method: "POST", body: data },
     );
     const result = await res.json();
     if (!res.ok) throw new Error("Upload failed");
@@ -71,75 +75,84 @@ export default function EmojiManager() {
     setIsUploading(true);
     const tid = toast.loading("Saving...");
     try {
+      let finalUrl = editData?.imageURL || "";
+
+      if (file) {
+        finalUrl = await handleUpload(file);
+      }
+
+      const payload = {
+        name: formData.name,
+        imageURL: finalUrl,
+        category: "Emoji",
+        subCategory: formData.category || "Uncategorized",
+        value: Number(formData.value || 0),
+        isActive: true,
+        updatedAt: serverTimestamp(),
+      };
+
       if (editData) {
-        await updateDoc(doc(db, "emojis", editData.id), formData);
+        await updateDoc(doc(db, "store", editData.id), payload);
         toast.success("Updated", { id: tid });
       } else {
-        if (!file) throw new Error("File required");
-        const url = await handleUpload(file);
-        await addDoc(collection(db, "emojis"), {
-          ...formData,
-          url,
+        if (!file) throw new Error("Image required");
+        await addDoc(collection(db, "store"), {
+          ...payload,
           createdAt: serverTimestamp(),
         });
         toast.success("Added", { id: tid });
       }
       setIsModalOpen(false);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Error occurred";
-      toast.error(msg, { id: tid });
+      toast.error(e instanceof Error ? e.message : "Error", { id: tid });
     } finally {
       setIsUploading(false);
     }
   };
 
   const confirmDelete = (id: string) => {
-    toast(
-      (t) => (
-        <div className="flex flex-col gap-3">
-          <p className="text-sm font-medium dark:text-white text-gray-900">
-            Delete this asset?
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={async () => {
-                toast.dismiss(t.id);
-                const tid = toast.loading("Deleting...");
-                try {
-                  await deleteDoc(doc(db, "emojis", id));
-                  toast.success("Deleted", { id: tid });
-                } catch {
-                  toast.error("Delete failed", { id: tid });
-                }
-              }}
-              className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs"
-            >
-              Delete
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className="bg-gray-200 text-gray-800 px-3 py-1 rounded-lg text-xs"
-            >
-              Cancel
-            </button>
-          </div>
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-medium dark:text-white">
+          Delete this emoji?
+        </p>
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id);
+              const tid = toast.loading("Deleting...");
+              try {
+                await deleteDoc(doc(db, "store", id));
+                toast.success("Deleted", { id: tid });
+              } catch {
+                toast.error("Failed", { id: tid });
+              }
+            }}
+            className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs"
+          >
+            Delete
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="bg-gray-200 text-black px-3 py-1 rounded-lg text-xs"
+          >
+            Cancel
+          </button>
         </div>
-      ),
-      { duration: 4000 },
-    );
+      </div>
+    ));
   };
 
   const filteredEmojis = emojis.filter(
-    (e) => filter === "All categories" || e.category === filter,
+    (e) => filter === "All categories" || e.subCategory === filter,
   );
-  const categoriesCount = new Set(emojis.map((e) => e.category)).size;
 
   return (
     <div className="md:p-8 min-h-screen text-white">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-12">
         <div className="p-6 rounded-2xl border dark:border-gray-800">
           <p className="text-gray-500 text-xs font-bold uppercase mb-1">
-            Total emojis
+            Total
           </p>
           <h2 className="text-3xl font-semibold dark:text-white text-black">
             {emojis.length}
@@ -150,67 +163,53 @@ export default function EmojiManager() {
             Categories
           </p>
           <h2 className="text-3xl font-semibold dark:text-white text-black">
-            {categoriesCount}
+            {new Set(emojis.map((e) => e.subCategory)).size}
           </h2>
         </div>
         <div className="p-6 rounded-2xl border dark:border-gray-800 hidden md:block">
-          <p className="text-gray-500 text-xs font-bold uppercase mb-1">
-            Last added
-          </p>
-          <h2 className="text-xl flex items-center gap-2 dark:text-white text-black">
-            {emojis[0] ? (
+          <p className="text-gray-500 text-xs font-bold uppercase mb-1">Last</p>
+          <h2 className="text-xl flex items-center gap-2 dark:text-white text-black truncate">
+            {emojis[0] && (
               <>
-                <img src={emojis[0].url} className="w-6 h-6" /> {emojis[0].name}
+                <img
+                  src={emojis[0].imageURL}
+                  className="w-6 h-6 object-contain"
+                />{" "}
+                {emojis[0].name}
               </>
-            ) : (
-              "None"
             )}
           </h2>
         </div>
       </div>
 
-      <div className="mb-3">
-        <h1 className="text-2xl font-bold">Emoji manager</h1>
-      </div>
-
       <div className="flex gap-4 mb-10 justify-between items-center">
-        <div className="relative flex-1 max-w-xs">
-          <select
-            className="w-full p-3 border dark:border-gray-800 rounded-xl outline-none text-sm appearance-none cursor-pointer text-black dark:text-white bg-transparent"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          >
-            <option className="text-black" value="All categories">
-              All categories
-            </option>
-            <option className="text-black" value="Faces">
-              Faces
-            </option>
-            <option className="text-black" value="Symbols">
-              Symbols
-            </option>
-            <option className="text-black" value="Nature">
-              Nature
-            </option>
-          </select>
-        </div>
+        <select
+          className="p-3 border dark:border-gray-800 rounded-xl text-black dark:text-white bg-transparent outline-none"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        >
+          <option className="text-black" value="All categories">All categories</option>
+          <option className="text-black" value="Faces">Faces</option>
+          <option className="text-black" value="Symbols">Symbols</option>
+          <option className="text-black" value="Nature">Nature</option>
+        </select>
         <button
           onClick={() => {
             setEditData(null);
             setIsModalOpen(true);
           }}
-          className="border dark:border-gray-800 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all text-black dark:text-white"
+          className="bg-black dark:border border-gray-800 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"
         >
-          <Plus size={18} /> Add emoji
+          <Plus size={18} /> Add Emoji
         </button>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <Loader2 className="animate-spin text-gray-500" size={40} />
+          <Loader2 className="animate-spin text-blue-500" size={40} />
         </div>
       ) : (
-        <div className="md:flex md:flex-wrap grid grid-cols-2 pt-5 gap-8 justify-center">
+        <div className="md:flex md:flex-wrap grid grid-cols-2 gap-8 justify-center">
           {filteredEmojis.map((emoji) => (
             <EmojiCard
               key={emoji.id}

@@ -1,4 +1,4 @@
-import { Edit3, Trash2, } from "lucide-react";
+import { Edit3, Trash2 } from "lucide-react";
 import { LevelBadge } from "./LevelBadgeManager";
 
 interface BadgeCardProps {
@@ -10,8 +10,8 @@ interface BadgeCardProps {
 export default function BadgeCard({ badge, onEdit, onDelete }: BadgeCardProps) {
   return (
     <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 w-50 rounded-[2rem] p-5 flex flex-col items-center gap-4 transition-all hover:shadow-xl hover:-translate-y-1">
-      <div className="w-24 h-24 bg-gray-50 dark:bg-gray-800/50 rounded-2xl flex items-center justify-center p-3 relative overflow-hidden">
-        <img src={badge.url} alt={badge.name} className="max-w-full max-h-full object-contain z-10" />
+      <div className="w-24 h-24 bg-gray-50 dark:bg-gray-800/50 rounded-2xl flex items-center justify-center p-3 relative overflow-hidden border dark:border-gray-700">
+        <img src={badge.imageURL} alt={badge.name} className="max-w-full max-h-full object-contain z-10" />
         <div className="absolute inset-0 bg-blue-500/5 blur-2xl rounded-full" />
       </div>
 

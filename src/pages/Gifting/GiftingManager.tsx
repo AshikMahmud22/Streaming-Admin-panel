@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { db } from "../../lib/firebase";
-import { collection, getDocs, doc, deleteDoc, addDoc, updateDoc, query, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc, addDoc, updateDoc, query, serverTimestamp, where } from "firebase/firestore";
 import { GiftCard } from "./GiftCard";
-import {GiftModal} from "./GiftModal";
+import { GiftModal } from "./GiftModal";
 import { Plus, Sparkles, Loader2 } from "lucide-react";
 import { Gift } from "../../types";
 import toast from "react-hot-toast";
@@ -13,15 +13,17 @@ export default function GiftingManager() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState<Gift | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedGiftId, setSelectedGiftId] = useState<string | null>(null);
 
   const fetchGifts = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, "gifts"));
+      const q = query(collection(db, "store"), where("category", "==", "Gift"));
       const snap = await getDocs(q);
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Gift);
       setGifts(data.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0)));
-    } catch {
+    } catch (error) {
+      console.error(error);
       toast.error("Failed to fetch assets");
     } finally {
       setLoading(false);
@@ -64,17 +66,19 @@ export default function GiftingManager() {
       const payload = {
         name: formData.name,
         value: Number(formData.value),
-        category: formData.category,
+        category: "Gift",
+        subCategory: formData.category,
         imageURL: finalUrl,
         iconURL: finalUrl,
+        isActive: true,
         updatedAt: serverTimestamp(),
       };
 
       if (editData?.id) {
-        await updateDoc(doc(db, "gifts", editData.id), payload);
+        await updateDoc(doc(db, "store", editData.id), payload);
         toast.success("Successfully updated", { id: toastId });
       } else {
-        await addDoc(collection(db, "gifts"), { ...payload, createdAt: serverTimestamp() });
+        await addDoc(collection(db, "store"), { ...payload, createdAt: serverTimestamp() });
         toast.success("Successfully added", { id: toastId });
       }
       
@@ -97,7 +101,7 @@ export default function GiftingManager() {
               toast.dismiss(t.id);
               const delId = toast.loading("Deleting...");
               try {
-                await deleteDoc(doc(db, "gifts", id));
+                await deleteDoc(doc(db, "store", id));
                 setGifts((prev) => prev.filter((g) => g.id !== id));
                 toast.success("Deleted", { id: delId });
               } catch {
@@ -120,11 +124,10 @@ export default function GiftingManager() {
     <div className="  min-h-screen mt-5">
       <div className="flex justify-between items-center mb-10"> 
         <div className="flex items-center gap-2">
-          <Sparkles className="text-blue-500" size={36} />
+          <span className="text-blue-500"><Sparkles size={36} /></span>
         <div>
-         
           <h1 className="md:text-3xl text-xl font-semibold dark:text-white flex items-center gap-3">
-             Asset Manager
+              Gift Manager
           </h1>
           <p className="text-gray-500 text-xs mt-1  font-bold tracking-widest uppercase text-start">Inventory</p>
         </div>
@@ -134,7 +137,7 @@ export default function GiftingManager() {
           onClick={() => { setEditData(null); setIsModalOpen(true); }}
           className="dark:bg-blue-950 dark:hover:bg-blue-900 dark:text-white  md:px-8 md:py-4 rounded-2xl font-semibold px-4 py-4 flex border dark:border-none items-center gap-2 dark:md:shadow-xl dark:shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
         >
-          <Plus size={20} /> Add New Asset
+          <Plus size={20} /> Add New Gift
         </button>
       </div>
 
@@ -145,7 +148,7 @@ export default function GiftingManager() {
         </div>
       ) : gifts.length === 0 ? (
         <div className="text-center py-40 border-4 border-dashed border-gray-100 dark:border-gray-800 rounded-[3rem]">
-          <p className="text-gray-400 font-black">NO ASSETS DEPLOYED</p>
+          <p className="text-gray-400 font-black">NO GIFTS DEPLOYED</p>
         </div>
       ) : (
         <div className="md:flex md:flex-wrap grid grid-cols-2 pt-5 gap-8 justify-center ">
@@ -155,6 +158,8 @@ export default function GiftingManager() {
               gift={gift}
               onDelete={handleDelete}
               onEdit={(g) => { setEditData(g); setIsModalOpen(true); }}
+              isSelected={selectedGiftId === gift.id}
+              onSelect={() => setSelectedGiftId(selectedGiftId === gift.id ? null : (gift.id || null))}
             />
           ))}
         </div>

@@ -6,7 +6,6 @@ import {
   addDoc,
   updateDoc,
   serverTimestamp,
-  FieldValue,
 } from "firebase/firestore";
 import { Upload, Loader2, X, ImageIcon, Palette } from "lucide-react";
 import toast from "react-hot-toast";
@@ -18,17 +17,11 @@ interface ThemeModalProps {
   editingTheme: RoomTheme | null;
 }
 
-interface RoomSkinData {
-  name: string;
-  url: string;
-  createdAt?: FieldValue;
-}
-
 export default function SkinModal({ onClose, editingTheme }: ThemeModalProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [name, setName] = useState(editingTheme?.name || "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>(editingTheme?.url || "");
+  const [preview, setPreview] = useState<string>(editingTheme?.imageURL || "");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,20 +57,20 @@ export default function SkinModal({ onClose, editingTheme }: ThemeModalProps) {
         finalUrl = result.secure_url;
       }
 
-      const skinData: RoomSkinData = {
+      const payload = {
         name: name,
-        url: finalUrl,
+        imageURL: finalUrl,
+        category: "RoomSkin",
+        isActive: true,
+        updatedAt: serverTimestamp(),
       };
 
       if (editingTheme) {
-        await updateDoc(doc(db, "room_skin", editingTheme.id), {
-          name: skinData.name,
-          url: skinData.url,
-        });
+        await updateDoc(doc(db, "store", editingTheme.id), payload);
         toast.success("Skin updated", { id: tid });
       } else {
-        await addDoc(collection(db, "room_skin"), {
-          ...skinData,
+        await addDoc(collection(db, "store"), {
+          ...payload,
           createdAt: serverTimestamp(),
         });
         toast.success("New skin published", { id: tid });
@@ -154,7 +147,7 @@ export default function SkinModal({ onClose, editingTheme }: ThemeModalProps) {
           <button
             disabled={isUploading}
             onClick={handleSave}
-            className="w-full py-5 dark:bg-blue-950 dark:hover:bg-blue-900 dark:text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 text-black bg-gray-200 hover:bg-gray-100"
+            className="w-full py-5 dark:bg-blue-950 dark:hover:bg-blue-900 dark:text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 text-black bg-gray-200 hover:bg-gray-100 border dark:border-blue-900"
           >
             {isUploading ? (
               <Loader2 className="animate-spin" />

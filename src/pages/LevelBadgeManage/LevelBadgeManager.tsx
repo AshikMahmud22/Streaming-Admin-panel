@@ -7,6 +7,7 @@ import {
   deleteDoc,
   query,
   Timestamp,
+  where,
 } from "firebase/firestore";
 import { Plus, Loader2, Shield } from "lucide-react";
 import toast from "react-hot-toast";
@@ -16,8 +17,9 @@ import BadgeModal from "./BadgeModal";
 export interface LevelBadge {
   id: string;
   level: number;
-  url: string;
+  imageURL: string;
   name: string;
+  category: string;
   createdAt?: Timestamp;
 }
 
@@ -28,7 +30,7 @@ export default function LevelBadgeManager() {
   const [editingBadge, setEditingBadge] = useState<LevelBadge | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, "level_badges"));
+    const q = query(collection(db, "store"), where("category", "==", "LevelBadge"));
     
     const unsubscribe = onSnapshot(q, (snap) => {
       const data = snap.docs.map((d) => ({ 
@@ -61,7 +63,7 @@ export default function LevelBadgeManager() {
               toast.dismiss(t.id);
               const loadingId = toast.loading("Deleting...");
               try {
-                await deleteDoc(doc(db, "level_badges", id));
+                await deleteDoc(doc(db, "store", id));
                 toast.success("Badge deleted", { id: loadingId });
               } catch {
                 toast.error("Delete failed", { id: loadingId });
@@ -73,7 +75,7 @@ export default function LevelBadgeManager() {
           </button>
           <button
             onClick={() => toast.dismiss(t.id)}
-            className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white px-4 py-2 rounded-xl text-xs font-bold transition-transform active:scale-95"
+            className="bg-gray-200  text-gray-800  px-4 py-2 rounded-xl text-xs font-bold transition-transform active:scale-95"
           >
             Cancel
           </button>
@@ -106,7 +108,7 @@ export default function LevelBadgeManager() {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center border rounded-2xl w-44 h-12 dark:text-white justify-center dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all font-bold text-sm shadow-sm active:scale-95"
+          className="flex items-center border rounded-2xl w-44 h-12 dark:text-white justify-center dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all font-bold text-sm shadow-sm active:scale-95 bg-white dark:bg-black"
         >
           <Plus size={18} className="mr-2" /> Add New Badge
         </button>

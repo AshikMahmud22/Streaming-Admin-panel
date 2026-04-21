@@ -29,6 +29,11 @@ import AgencyManager from "./pages/Agency/AgencyManager";
 import AgencyDetails from "./pages/Agency/AgencyDetails";
 import ThemeManager from "./pages/ThemeManager/ThemeManager";
 import RoomSkinManager from "./pages/RoomThemeManage/RoomSkinManager";
+import AboutUsManager from "./pages/AboutUs/AboutUsManager";
+import StorePage from "./components/Store/StorePage";
+import LiveModerator from "./pages/BoardManager/LiveModerator";
+import AudioRoomList from "./pages/BoardManager/AudioRoomList";
+import VideoLiveList from "./pages/BoardManager/VideoLiveList";
 
 export default function App() {
   return (
@@ -51,6 +56,14 @@ export default function App() {
             <Route path="/agencies" element={<AgencyManager />} />
             <Route path="/agency/:id" element={<AgencyDetails />} />
             <Route path="/theme-upload" element={<ThemeManager />} />
+            <Route path="/about-us" element={<AboutUsManager />} />
+            <Route path="/store" element={<StorePage />} />
+            <Route path="/audio-board" element={<AudioRoomList />} />
+            <Route path="/video-board" element={<VideoLiveList />} />
+            <Route
+              path="/live-moderate/:mode/:roomId"
+              element={<LiveModerator />}
+            />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

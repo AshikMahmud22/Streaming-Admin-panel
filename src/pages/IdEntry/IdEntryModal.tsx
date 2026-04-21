@@ -25,7 +25,7 @@ export const IdEntryModal = ({
   useEffect(() => {
     if (initialData) {
       setName(initialData.name);
-      setCategory(initialData.category);
+      setCategory(initialData.subCategory || "Vip");
       setType(initialData.type);
     } else {
       setName("");
@@ -103,29 +103,22 @@ export const IdEntryModal = ({
             </div>
           </div>
 
-          {!initialData && (
-            <div>
-              <label className="text-xs font-bold text-gray-500 uppercase ml-1">
-                Asset ({type.toUpperCase()})
-              </label>
-              <label className="mt-1 flex flex-col items-center justify-center w-full h-32 border-2 border-dashed dark:border-gray-800 rounded-xl cursor-pointer hover:transition-all">
-                <UploadCloud className="text-gray-500 mb-2" />
-                <span className="text-xs text-gray-400">
-                  {file ? file.name : `Select ${type.toUpperCase()} File`}
-                </span>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept={type === "png" ? "image/png" : ".svga"}
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                />
-              </label>
-            </div>
-          )}
+          <label className="mt-1 flex flex-col items-center justify-center w-full h-32 border-2 border-dashed dark:border-gray-800 rounded-xl cursor-pointer hover:transition-all">
+            <UploadCloud className="text-gray-500 mb-2" />
+            <span className="text-xs text-gray-400">
+              {file ? file.name : initialData ? "Change Asset (Optional)" : `Select ${type.toUpperCase()} File`}
+            </span>
+            <input
+              type="file"
+              className="hidden"
+              accept={type === "png" ? "image/png" : ".svga"}
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+            />
+          </label>
 
           <button
             disabled={isUploading}
-            className="w-full text-black h-14 rounded-xl font-bold bg-gray-200 hover:bg-gray-100 transition-all flex items-center justify-center dark:bg-blue-200 disabled:bg-gray-600 border"
+            className="w-full text-black h-14 rounded-xl font-bold bg-gray-200 hover:bg-gray-100 transition-all flex items-center justify-center dark:bg-blue-200 disabled:opacity-50 border"
           >
             {isUploading ? (
               <Loader2 className="animate-spin" size={24} />

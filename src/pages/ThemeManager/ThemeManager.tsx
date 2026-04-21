@@ -7,6 +7,7 @@ import {
   deleteDoc,
   query,
   Timestamp,
+  where,
 } from "firebase/firestore";
 import { Plus, Loader2, Palette } from "lucide-react";
 import toast from "react-hot-toast";
@@ -15,9 +16,10 @@ import ThemeCard from "./ThemeCards";
 
 export interface Theme {
   id: string;
-  url: string;
+  imageURL: string;
   name: string;
   price: number;
+  category: string;
   createdAt?: Timestamp;
 }
 
@@ -28,7 +30,7 @@ export default function ThemeManager() {
   const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, "themes"));
+    const q = query(collection(db, "store"), where("category", "==", "AppTheme"));
     const unsubscribe = onSnapshot(q, (snap) => {
       const data = snap.docs.map((d) => ({
         id: d.id,
@@ -59,7 +61,7 @@ export default function ThemeManager() {
               toast.dismiss(t.id);
               const loadingId = toast.loading("Deleting...");
               try {
-                await deleteDoc(doc(db, "themes", id));
+                await deleteDoc(doc(db, "store", id));
                 toast.success("Theme deleted", { id: loadingId });
               } catch {
                 toast.error("Delete failed", { id: loadingId });
@@ -71,7 +73,7 @@ export default function ThemeManager() {
           </button>
           <button
             onClick={() => toast.dismiss(t.id)}
-            className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white px-4 py-2 rounded-xl text-xs font-bold transition-transform active:scale-95"
+            className="bg-gray-200   px-4 py-2 text-black rounded-xl text-xs font-bold transition-transform active:scale-95 "
           >
             Cancel
           </button>
@@ -104,7 +106,7 @@ export default function ThemeManager() {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center border rounded-2xl w-12 h-12 md:w-44 dark:text-white justify-center dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all font-bold text-sm shadow-sm active:scale-95"
+          className="flex items-center border rounded-2xl w-12 h-12 md:w-44 dark:text-white justify-center dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all font-bold text-sm shadow-sm active:scale-95 bg-white dark:bg-black"
         >
           <Plus size={20} /> <span className="hidden md:inline ml-2">Add New Theme</span>
         </button>

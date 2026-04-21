@@ -12,7 +12,7 @@ export default function SkinCard({ theme, onEdit, onDelete }: ThemeCardProps) {
     <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 w-50 rounded-[2rem] p-3 flex flex-col gap-3 aspect-4/6 transition-all hover:shadow-xl group">
       <div className="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden relative shadow-inner">
         <img
-          src={theme.url}
+          src={theme.imageURL}
           alt={theme.name}
           className="w-full h-full object-cover"
         />
@@ -27,7 +27,7 @@ export default function SkinCard({ theme, onEdit, onDelete }: ThemeCardProps) {
       <div className="grid grid-cols-2 gap-2 w-full">
         <button
           onClick={onEdit}
-          className="flex items-center justify-center py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-purple-500 hover:text-white transition-all active:scale-90 shadow-sm"
+          className="flex items-center justify-center py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-xl hover:text-blue-500 dark:hover:text-blue-500  transition-all active:scale-90 shadow-sm"
         >
           <Edit3 size={14} />
         </button>

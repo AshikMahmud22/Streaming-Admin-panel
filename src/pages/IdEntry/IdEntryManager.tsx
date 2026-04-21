@@ -10,6 +10,7 @@ import {
   query,
   serverTimestamp,
   Timestamp,
+  where,
 } from "firebase/firestore";
 import { Plus, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -19,9 +20,10 @@ import { IdEntryModal } from "./IdEntryModal";
 export interface IdEntry {
   id: string;
   name: string;
-  url: string;
+  imageURL: string;
   type: "png" | "svga";
   category: string;
+  subCategory?: string;
   createdAt?: Timestamp;
 }
 
@@ -32,9 +34,10 @@ export default function IdEntryManager() {
   const [isUploading, setIsUploading] = useState(false);
   const [editData, setEditData] = useState<IdEntry | null>(null);
   const [filter, setFilter] = useState("All categories");
+  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, "id_entries"));
+    const q = query(collection(db, "store"), where("category", "==", "IdEntry"));
     const unsubscribe = onSnapshot(
       q,
       (snap) => {
@@ -83,15 +86,26 @@ export default function IdEntryManager() {
     setIsUploading(true);
     const tid = toast.loading("Processing...");
     try {
+      let finalUrl = editData?.imageURL || "";
+      if (file) finalUrl = await handleUpload(file);
+
+      const payload = {
+        name: formData.name,
+        imageURL: finalUrl,
+        type: formData.type,
+        category: "IdEntry",
+        subCategory: formData.category,
+        isActive: true,
+        updatedAt: serverTimestamp(),
+      };
+
       if (editData) {
-        await updateDoc(doc(db, "id_entries", editData.id), formData);
+        await updateDoc(doc(db, "store", editData.id), payload);
         toast.success("Updated", { id: tid });
       } else {
-        if (!file) throw new Error("File required");
-        const url = await handleUpload(file);
-        await addDoc(collection(db, "id_entries"), {
-          ...formData,
-          url,
+        if (!finalUrl) throw new Error("File required");
+        await addDoc(collection(db, "store"), {
+          ...payload,
           createdAt: serverTimestamp(),
         });
         toast.success("Added", { id: tid });
@@ -117,7 +131,7 @@ export default function IdEntryManager() {
               toast.dismiss(t.id);
               const tid = toast.loading("Removing...");
               try {
-                await deleteDoc(doc(db, "id_entries", id));
+                await deleteDoc(doc(db, "store", id));
                 toast.success("Removed", { id: tid });
               } catch {
                 toast.error("Failed", { id: tid });
@@ -139,7 +153,7 @@ export default function IdEntryManager() {
   };
 
   const filtered = entries.filter(
-    (e) => filter === "All categories" || e.category === filter,
+    (e) => filter === "All categories" || e.subCategory === filter,
   );
 
   return (
@@ -153,7 +167,6 @@ export default function IdEntryManager() {
             Manage SVGA and PNG entry effects
           </p>
         </div>
-       
       </div>
 
       <div className="mb-8 flex gap-3 text-nowrap justify-between items-center ">
@@ -175,12 +188,12 @@ export default function IdEntryManager() {
             Special
           </option>
         </select>
-         <button
+        <button
           onClick={() => {
             setEditData(null);
             setIsModalOpen(true);
           }}
-          className="darK:bg-black  dark:text-white text-black px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 border dark:border-gray-800"
+          className="dark:bg-black dark:text-white text-black px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 border dark:border-gray-800 bg-white"
         >
           <Plus size={18} /> Add Entry
         </button>
@@ -201,6 +214,8 @@ export default function IdEntryManager() {
                 setIsModalOpen(true);
               }}
               onDelete={confirmDelete}
+              isSelected={selectedEntryId === entry.id}
+              onSelect={() => setSelectedEntryId(selectedEntryId === entry.id ? null : entry.id)}
             />
           ))}
         </div>
