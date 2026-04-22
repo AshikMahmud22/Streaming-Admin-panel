@@ -23,10 +23,10 @@ export const handleModerationAction = async (
   type: "audio" | "video",
   roomId: string,
   targetUserId: string,
-  action: "kickout" | "24h" | "7d" | "block" | "mute"
+  action: "kickout" | "24h" | "7d" | "30d" | "block" | "mute" | "unmute"
 ) => {
   const now = Date.now();
-  let modData: ModerationData = { updatedAt: now };
+  let modData: Partial<ModerationData> & { updatedAt: number } = { updatedAt: now };
   const isAudio = type === "audio";
 
   const paths = {
@@ -38,8 +38,12 @@ export const handleModerationAction = async (
 
   if (action === "kickout") {
     modData = { ...modData, kickedOut: true, kickedAt: now, kickoutReason: "Violating rules" };
-  } else if (action === "24h" || action === "7d") {
-    const duration = action === "24h" ? 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+  } else if (action === "24h" || action === "7d" || action === "30d") {
+    let duration = 0;
+    if (action === "24h") duration = 24 * 60 * 60 * 1000;
+    else if (action === "7d") duration = 7 * 24 * 60 * 60 * 1000;
+    else if (action === "30d") duration = 30 * 24 * 60 * 60 * 1000;
+
     modData = {
       ...modData,
       removed: true,
@@ -52,19 +56,24 @@ export const handleModerationAction = async (
     modData = { ...modData, blocked: true, blockedAt: now, blockedReason: "Permanent ban" };
   } else if (action === "mute") {
     modData = { ...modData, isMuted: true, mutedAt: now };
+  } else if (action === "unmute") {
+    modData = { ...modData, isMuted: false, mutedAt: 0 };
   }
 
   try {
     await update(ref(rtdb, paths.mod), modData);
 
-    if (action !== "mute") {
+    if (action === "mute" || action === "unmute") {
+      await update(ref(rtdb, paths.participants), { isMuted: action === "mute" });
+    } else {
       await remove(ref(rtdb, paths.participants));
       if (isAudio) {
         await remove(ref(rtdb, paths.speakerReq));
         await remove(ref(rtdb, paths.cohostReq));
       }
     }
-    toast.success(`Action ${action} successful`);
+
+    toast.success(`${action.toUpperCase()} successful`);
   } catch (error) {
     console.error(error);
     toast.error("Operation failed");

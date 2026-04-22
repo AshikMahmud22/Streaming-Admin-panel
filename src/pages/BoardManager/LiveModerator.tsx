@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router";
 import { ref, onValue, Unsubscribe } from "firebase/database";
 import { rtdb } from "../../lib/firebase";
-import { MicOff, UserMinus, Ban, ShieldX, Clock } from "lucide-react";
-import { handleModerationAction } from "../../utils/moderationService";
+import { Search, ShieldAlert } from "lucide-react";
+import ModeratorTable from "./ModeratorTable";
 
 interface ParticipantData {
   isOnline?: boolean;
+  isMuted?: boolean;
   joinedAt?: number;
   role?: string;
   [key: string]: unknown;
@@ -19,110 +20,65 @@ interface Participant extends ParticipantData {
 export default function LiveModerator() {
   const { mode, roomId } = useParams<{ mode: "audio" | "video"; roomId: string }>();
   const [users, setUsers] = useState<Participant[]>([]);
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const isAudio = mode === "audio";
 
-useEffect(() => {
-  if (!mode || !roomId) return;
+  useEffect(() => {
+    if (!mode || !roomId) return;
+    const path = isAudio ? `room_participants/${roomId}` : `live_participants/${roomId}`;
+    const refPoint = ref(rtdb, path);
+    const unsub: Unsubscribe = onValue(refPoint, (snap) => {
+      const data = snap.val();
+      setUsers(data ? Object.keys(data).map(id => ({ id, ...(data[id] as ParticipantData) })) : []);
+    });
+    return () => unsub();
+  }, [roomId, mode, isAudio]);
 
-  const path = mode === "audio" ? `room_participants/${roomId}` : `live_participants/${roomId}`;
-  console.log("Checking Path:", path); // চেক করুন পাথটি ঠিক আছে কি না
-
-  const participantsRef = ref(rtdb, path);
-
-  const unsubscribe: Unsubscribe = onValue(participantsRef, (snapshot) => {
-    const data = snapshot.val();
-    console.log("Database Snapshot:", data); // এখানে কি null আসে নাকি ডাটা আসে?
-    
-    if (data) {
-      const userList = Object.keys(data).map(id => ({
-        id,
-        ...data[id] as ParticipantData
-      }));
-      setUsers(userList);
-    } else {
-      setUsers([]);
-    }
-  });
-
-  return () => unsubscribe();
-}, [roomId, mode]);
+  const filtered = useMemo(() => 
+    users.filter(u => u.id.toLowerCase().includes(query.toLowerCase())), 
+  [users, query]);
 
   if (!mode || !roomId) {
     return (
-      <div className="p-10 text-center dark:text-white">
-        Invalid Configuration: Missing Room ID or Mode.
+      <div className="h-screen flex items-center justify-center dark:bg-black">
+        <ShieldAlert size={40} className="text-red-500 opacity-20" />
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-950 p-5 rounded-[2rem] border dark:border-gray-800 shadow-xl">
-      <div className="flex justify-between mb-5">
-        <h3 className="font-black text-xl tracking-tight dark:text-white uppercase">
-          {mode} Live Management
-        </h3>
-      </div>
-
-      <div className="grid gap-3">
-        {users.length > 0 ? (
-          users.map((user) => (
-            <div key={user.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl border dark:border-gray-800">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                  {user.id.slice(-4)}
-                </div>
-                <span className="text-sm font-bold dark:text-gray-300">{user.id.slice(0, 10)}...</span>
-              </div>
-
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => handleModerationAction(mode, roomId, user.id, "mute")} 
-                  className="p-2 hover:bg-orange-100 text-orange-500 rounded-lg transition-all"
-                >
-                  <MicOff size={18} />
-                </button>
-
-                <button 
-                  onClick={() => handleModerationAction(mode, roomId, user.id, "kickout")} 
-                  className="p-2 hover:bg-gray-200 text-gray-600 rounded-lg transition-all"
-                >
-                  <UserMinus size={18} />
-                </button>
-
-                <div className="relative group">
-                  <button className="p-2 hover:bg-red-100 text-red-500 rounded-lg transition-all">
-                    <Ban size={18} />
-                  </button>
-                  
-                  <div className="absolute right-0 bottom-full mb-3 hidden group-hover:block w-44 bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-2xl shadow-2xl p-2 z-[100]">
-                    <button 
-                      onClick={() => handleModerationAction(mode, roomId, user.id, "24h")} 
-                      className="w-full flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl text-xs font-bold dark:text-white"
-                    >
-                      <Clock size={14}/> 24 Hours Remove
-                    </button>
-                    <button 
-                      onClick={() => handleModerationAction(mode, roomId, user.id, "7d")} 
-                      className="w-full flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl text-xs font-bold dark:text-white"
-                    >
-                      <Clock size={14}/> 7 Days Remove
-                    </button>
-                    <div className="h-[1px] bg-gray-100 dark:bg-gray-800 my-1" />
-                    <button 
-                      onClick={() => handleModerationAction(mode, roomId, user.id, "block")} 
-                      className="w-full flex items-center gap-2 p-2 hover:bg-red-50 text-red-600 rounded-xl text-xs font-black"
-                    >
-                      <ShieldX size={14}/> Permanent Block
-                    </button>
-                  </div>
-                </div>
-              </div>
+    <div className="bg-[#FAFAFA] dark:bg-black  md:p-12 min-h-screen transition-all duration-700">
+      <div className="">
+        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-16">
+          <div className="space-y-3">
+            <div className={`px-4 py-1 rounded-full border w-fit text-[9px] font-black uppercase tracking-[0.3em] ${isAudio ? 'bg-emerald-50 border-emerald-100/50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-purple-50 border-purple-100/50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400'}`}>
+              Access Level: System {mode}
             </div>
-          ))
-        ) : (
-          <div className="text-center py-10 text-gray-500 dark:text-gray-400">
-            No active participants found.
+            <h1 className="text-6xl sm:text-7xl font-black tracking-tighter text-gray-900 dark:text-white uppercase leading-none">
+              Terminal <span className={isAudio ? 'text-emerald-500' : 'text-purple-600'}>Alpha</span>
+            </h1>
           </div>
-        )}
+          <div className="relative w-full lg:w-72 group">
+            <Search className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${isAudio ? 'group-focus-within:text-emerald-500' : 'group-focus-within:text-purple-500'} text-gray-400`} size={18} />
+            <input 
+              type="text" 
+              placeholder="SEARCH UID" 
+              className="w-full pl-14 pr-6 py-4 ] border border-gray-200 dark:border-white/5 rounded-2xl text-[10px] font-bold tracking-widest outline-none dark:text-white focus:ring-4 focus:ring-black/5 dark:focus:ring-white/5"
+              onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+            />
+          </div>
+        </header>
+
+        <ModeratorTable 
+          data={filtered}
+          mode={mode}
+          roomId={roomId}
+          isAudio={isAudio}
+          currentPage={page}
+          onPageChange={setPage}
+          itemsPerPage={10}
+        />
       </div>
     </div>
   );
