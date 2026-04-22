@@ -74,7 +74,7 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Agency List", path: "/agencies", icon: <Building2 size={18} /> },
       { name: "Host Approvals", path: "/host-approvals", icon: <Users size={18} /> },
-      { name: "Support Tickets", path: "/support", icon: <MessageSquare size={18} /> },
+      { name: "Support ", path: "/support", icon: <MessageSquare size={18} /> },
     ],
   },
   { name: "Coin & Earnings", icon: <Coins size={22} />, path: "/Coin-manage" },

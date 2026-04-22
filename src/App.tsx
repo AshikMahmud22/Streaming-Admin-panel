@@ -33,6 +33,7 @@ import AboutUsManager from "./pages/AboutUs/AboutUsManager";
 import LiveModerator from "./pages/BoardManager/LiveModerator";
 import AudioRoomList from "./pages/BoardManager/AudioBoard/AudioRoomList";
 import VideoLiveList from "./pages/BoardManager/VideoBoard/VideoLiveList";
+import Support from "./pages/Support/Support";
 
 export default function App() {
   return (
@@ -62,6 +63,10 @@ export default function App() {
             <Route
               path="/live-moderate/:mode/:roomId"
               element={<LiveModerator />}
+            />
+            <Route
+              path="/support"
+              element={<Support />}
             />
 
             {/* Others Page */}

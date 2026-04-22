@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ref, onValue, Unsubscribe } from "firebase/database";
 import { rtdb } from "../../../lib/firebase";
 import { Search, Ghost } from "lucide-react";
