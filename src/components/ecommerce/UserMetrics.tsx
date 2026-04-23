@@ -58,7 +58,7 @@ export default function EcommerceMetrics() {
             </div>
           </div>
         </div>
-        <div className="flex justify-around border-t dark:border-gray-800 border-gray-100 pt-3">
+        <div className="flex justify-around border-t dark:border-gray-800 border-gray-100 pt-3 flex-wrap gap-3">
           <Badge color="success">
             <ArrowUpIcon />
             Active {userStats.active}
@@ -87,7 +87,7 @@ export default function EcommerceMetrics() {
             </div>
           </div>
         </div>
-        <div className="flex justify-around border-t dark:border-gray-800 border-gray-100 pt-3">
+        <div className="flex justify-around border-t dark:border-gray-800 border-gray-100 pt-3 flex-wrap gap-3">
           <Badge color="success">
             <ArrowUpIcon />
             Active {400}

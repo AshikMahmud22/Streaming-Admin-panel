@@ -53,7 +53,7 @@ export default function CoinManager() {
 
   return (
     <div className="min-h-screen relative flex flex-col">
-      <div className="sticky top-0 z-30 bg-white dark:bg-black border-b dark:border-gray-800 px-4 md:px-8 pt-4 pb-6">
+      <div className="sticky top-0 z-30 bg-white dark:bg-black border-b dark:border-gray-800 px-4 md:px-8 md:pt-4 pb-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold dark:text-white text-black">User Coin Management</h1>
           <p className="text-gray-500 text-sm mt-1">Manage balances and resets</p>

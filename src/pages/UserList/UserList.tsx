@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../components/ui/table";
-import Badge from "../../components/ui/badge/Badge";
 import { Pagination } from "../../components/Pagination/Pagination";
 import { collection, getDocs, query, orderBy, doc, updateDoc, Timestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import UserTable, { User } from "./UserTable";
+
+type FilterType = "All" | "Active" | "Inactive" | "Blocked" | "Timeout";
 
 export default function UserList() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"All" | "Active" | "Inactive" | "Blocked" | "Timeout">("All");
+  const [filter, setFilter] = useState<FilterType>("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [now, setNow] = useState(new Date());
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [timeoutMinutes, setTimeoutMinutes] = useState("");
@@ -32,7 +33,7 @@ export default function UserList() {
       const usersData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      }));
+      })) as User[];
       setUsers(usersData);
     } catch (error) {
       console.error(error);
@@ -61,10 +62,8 @@ export default function UserList() {
 
   const confirmTimeout = async () => {
     if (!selectedUser || !timeoutMinutes || isNaN(Number(timeoutMinutes))) return;
-
     const timeoutDate = new Date();
     timeoutDate.setMinutes(timeoutDate.getMinutes() + Number(timeoutMinutes));
-
     try {
       await updateDoc(doc(db, "users", selectedUser), {
         timeoutUntil: Timestamp.fromDate(timeoutDate),
@@ -79,26 +78,21 @@ export default function UserList() {
 
   const cancelTimeout = async (id: string) => {
     try {
-      await updateDoc(doc(db, "users", id), {
-        timeoutUntil: null,
-      });
+      await updateDoc(doc(db, "users", id), { timeoutUntil: null });
       fetchUsers(false);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const getTimeoutDisplay = (timeoutUntil: any) => {
+  const getTimeoutDisplay = (timeoutUntil: Timestamp | null): string | null => {
     if (!timeoutUntil) return null;
-    const target = timeoutUntil.toDate ? timeoutUntil.toDate() : new Date(timeoutUntil);
+    const target = timeoutUntil.toDate();
     const diff = target.getTime() - now.getTime();
-
     if (diff <= 0) return null;
-
     const h = Math.floor(diff / (1000 * 60 * 60));
     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const s = Math.floor((diff % (1000 * 60)) / 1000);
-
     return `${h > 0 ? h + "h " : ""}${m}m ${s}s`;
   };
 
@@ -107,16 +101,16 @@ export default function UserList() {
       u.displayName?.toLowerCase().includes(search.toLowerCase()) ||
       u.email?.toLowerCase().includes(search.toLowerCase()) ||
       u.displayId?.includes(search);
-
-    const isTimedOut = u.timeoutUntil && (u.timeoutUntil.toDate ? u.timeoutUntil.toDate() : new Date(u.timeoutUntil)) > now;
-
+    
+    const isTimedOut = u.timeoutUntil && u.timeoutUntil.toDate() > now;
+    
     const matchesFilter =
       filter === "All" ||
       (filter === "Active" && u.isActive && !u.isBlocked && !isTimedOut) ||
       (filter === "Inactive" && !u.isActive) ||
       (filter === "Blocked" && u.isBlocked) ||
       (filter === "Timeout" && isTimedOut);
-
+    
     return matchesSearch && matchesFilter;
   });
 
@@ -141,7 +135,7 @@ export default function UserList() {
           className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 cursor-pointer outline-none"
           value={filter}
           onChange={(e) => {
-            setFilter(e.target.value as any);
+            setFilter(e.target.value as FilterType);
             setCurrentPage(1);
           }}
         >
@@ -161,85 +155,13 @@ export default function UserList() {
             <p className="text-gray-500 dark:text-gray-400 text-lg">No {filter !== "All" ? filter.toLowerCase() : ""} users found.</p>
           </div>
         ) : (
-          <Table>
-            <TableHeader className=" ">
-              <TableRow className="border-y dark:border-gray-800">
-                <TableCell className="py-3  text-start pl-10" isHeader>User</TableCell>
-                <TableCell className="py-3 pl-3 text-start" isHeader>Email</TableCell>
-                <TableCell className="py-3 text-center" isHeader>Status</TableCell>
-                <TableCell className="py-3 text-center" isHeader>Time Left</TableCell>
-                <TableCell className="py-3 text-center" isHeader>Actions</TableCell>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentUsers.map((user) => {
-                const timeoutText = getTimeoutDisplay(user.timeoutUntil);
-                return (
-                  <TableRow className="border-y dark:border-gray-800" key={user.id}>
-                    <TableCell className="py-2 pl-5">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={user.photoUrl || "/default-avatar.png"}
-                          alt=""
-                          className="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
-                        />
-                        <span className="font-medium text-gray-900 dark:text-white text-nowrap">
-                          {user.displayName}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-3 text-sm text-gray-500 dark:text-gray-400 pl-3">
-                      {user.email}
-                    </TableCell>
-                    <TableCell className="py-3 pl-3 text-nowrap text-center">
-                      {user.isBlocked ? (
-                        <Badge color="error">Blocked</Badge>
-                      ) : timeoutText ? (
-                        <Badge color="warning">On Timeout</Badge>
-                      ) : (
-                        <Badge color={user.isActive ? "success" : "warning"}>
-                          {user.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="py-3 font-mono text-xs text-nowrap text-orange-500 text-center px-3">
-                      {timeoutText || "-"}
-                    </TableCell>
-                    <TableCell className="py-3 ">
-                      <div className="flex justify-center gap-2 ">
-                        <button
-                          onClick={() => handleBlockToggle(user.id, user.isBlocked || false)}
-                          className={`px-3 py-1 text-xs font-medium rounded-md border transition-colors ${
-                            user.isBlocked 
-                              ? "border-green-500 text-green-500 hover:bg-green-500 hover:text-white" 
-                              : "border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                          }`}
-                        >
-                          {user.isBlocked ? "Unblock" : "Block"}
-                        </button>
-                        
-                        {timeoutText ? (
-                          <button
-                            onClick={() => cancelTimeout(user.id)}
-                            className="px-3 py-1 text-xs font-medium rounded-md border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors"
-                          >
-                            Cancel
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => openTimeoutModal(user.id)}
-                            className="px-3 py-1 text-xs font-medium rounded-md border border-gray-400 text-gray-600 hover:bg-gray-600 hover:text-white dark:text-gray-300 transition-colors"
-                          >
-                            Timeout
-                          </button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <UserTable
+            users={currentUsers}
+            getTimeoutDisplay={getTimeoutDisplay}
+            handleBlockToggle={handleBlockToggle}
+            cancelTimeout={cancelTimeout}
+            openTimeoutModal={openTimeoutModal}
+          />
         )}
       </div>
 

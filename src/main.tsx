@@ -7,6 +7,7 @@ import App from "./App.tsx";
 import { AppWrapper } from "./components/common/PageMeta.tsx";
 import { ThemeProvider, useTheme } from "./context/ThemeContext.tsx";
 import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "./lib/AuthProvider.tsx";
 
 const ToasterWithTheme = () => {
   const { theme } = useTheme();
@@ -34,11 +35,13 @@ const ToasterWithTheme = () => {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider>
-      <AppWrapper>
-        <ToasterWithTheme />
-        <App />
-      </AppWrapper>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <AppWrapper>
+          <ToasterWithTheme />
+          <App />
+        </AppWrapper>
+      </ThemeProvider>
+    </AuthProvider>
   </StrictMode>
 );
