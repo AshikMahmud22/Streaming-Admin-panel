@@ -34,7 +34,7 @@ export default function UserDropdown() {
       >
         <span className="overflow-hidden rounded-full h-10 w-10 border dark:border-gray-800">
           <img 
-            src="/images/logo/mplive.jpeg" 
+            src="/mplive.jpeg" 
             alt="Company Logo" 
             className="w-full h-full object-cover"
           />

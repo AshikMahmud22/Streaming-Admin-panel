@@ -104,7 +104,7 @@ export default function AgencyManager() {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 shadow-xl shadow-blue-500/20 active:scale-95 transition-all w-full md:w-auto justify-center"
+          className="  dark:text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 sh active:scale-95 transition-all w-full md:w-auto justify-center border dark:border-gray-800"
         >
           <Plus size={20} /> Add New Agency
         </button>
@@ -128,10 +128,10 @@ export default function AgencyManager() {
               >
                 <td className="p-6">
                   <div className="flex items-center gap-4">
-                    <div className="relative">
+                    <div className="relative w-15 h-15">
                       <img
                         src={agency.logo}
-                        className="w-14 h-14 rounded-2xl object-cover ring-4 ring-gray-100 dark:ring-gray-800 group-hover:ring-blue-500/30 transition-all"
+                        className="rounded-2xl object-cover ring-4 ring-gray-100 aspect-square dark:ring-gray-800 group-hover:ring-blue-500/30 transition-all"
                       />
                       <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
                     </div>

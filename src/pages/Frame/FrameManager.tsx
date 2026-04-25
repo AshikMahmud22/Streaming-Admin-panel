@@ -134,7 +134,7 @@ export default function FrameManager() {
         </div>
       </div>
 
-      <div className="mb-8 flex gap-3 justify-between items-center">
+      <div className="mb-8 flex gap-3 justify-between items-center flex-wrap">
         <select className="w-full p-3 border dark:border-gray-800 rounded-xl outline-none text-sm bg-transparent dark:text-white text-black md:max-w-xs" value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option className="text-black" value="All categories">All categories</option>
           <option className="text-black" value="Basic">Basic</option>

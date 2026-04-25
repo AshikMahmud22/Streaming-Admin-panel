@@ -30,14 +30,22 @@ export default function LiveModerator() {
     const refPoint = ref(rtdb, path);
     const unsub: Unsubscribe = onValue(refPoint, (snap) => {
       const data = snap.val();
-      setUsers(data ? Object.keys(data).map(id => ({ id, ...(data[id] as ParticipantData) })) : []);
+      setUsers(
+        data
+          ? Object.keys(data).map((id) => ({
+              id,
+              ...(data[id] as ParticipantData),
+            }))
+          : []
+      );
     });
     return () => unsub();
   }, [roomId, mode, isAudio]);
 
-  const filtered = useMemo(() => 
-    users.filter(u => u.id.toLowerCase().includes(query.toLowerCase())), 
-  [users, query]);
+  const filtered = useMemo(
+    () => users.filter((u) => u.id.toLowerCase().includes(query.toLowerCase())),
+    [users, query]
+  );
 
   if (!mode || !roomId) {
     return (
@@ -48,29 +56,48 @@ export default function LiveModerator() {
   }
 
   return (
-    <div className="bg-[#FAFAFA] dark:bg-black  md:p-12 min-h-screen transition-all duration-700">
-      <div className="">
+    <div className="bg-[#FAFAFA] dark:bg-black md:p-12 min-h-screen transition-all duration-700">
+      <div>
         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-16">
           <div className="space-y-3">
-            <div className={`px-4 py-1 rounded-full border w-fit text-[9px] font-black uppercase tracking-[0.3em] ${isAudio ? 'bg-emerald-50 border-emerald-100/50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-purple-50 border-purple-100/50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400'}`}>
+            <div
+              className={`px-4 py-1 rounded-full border w-fit text-[9px] font-black uppercase tracking-[0.3em] ${
+                isAudio
+                  ? "bg-emerald-50 border-emerald-100/50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
+                  : "bg-purple-50 border-purple-100/50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400"
+              }`}
+            >
               Access Level: System {mode}
             </div>
             <h1 className="text-6xl sm:text-7xl font-black tracking-tighter text-gray-900 dark:text-white uppercase leading-none">
-              Terminal <span className={isAudio ? 'text-emerald-500' : 'text-purple-600'}>Alpha</span>
+              Terminal{" "}
+              <span className={isAudio ? "text-emerald-500" : "text-purple-600"}>
+                Alpha
+              </span>
             </h1>
           </div>
           <div className="relative w-full lg:w-72 group">
-            <Search className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${isAudio ? 'group-focus-within:text-emerald-500' : 'group-focus-within:text-purple-500'} text-gray-400`} size={18} />
-            <input 
-              type="text" 
-              placeholder="SEARCH UID" 
-              className="w-full pl-14 pr-6 py-4 ] border border-gray-200 dark:border-white/5 rounded-2xl text-[10px] font-bold tracking-widest outline-none dark:text-white focus:ring-4 focus:ring-black/5 dark:focus:ring-white/5"
-              onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+            <Search
+              className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${
+                isAudio
+                  ? "group-focus-within:text-emerald-500"
+                  : "group-focus-within:text-purple-500"
+              } text-gray-400`}
+              size={18}
+            />
+            <input
+              type="text"
+              placeholder="SEARCH UID"
+              className="w-full pl-14 pr-6 py-4 border border-gray-200 dark:border-white/5 rounded-2xl text-[10px] font-bold tracking-widest outline-none dark:text-white focus:ring-4 focus:ring-black/5 dark:focus:ring-white/5"
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
         </header>
 
-        <ModeratorTable 
+        <ModeratorTable
           data={filtered}
           mode={mode}
           roomId={roomId}

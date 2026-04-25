@@ -125,7 +125,7 @@ const AdminManagement: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Admin Management</h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap justify-between ">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
@@ -137,7 +137,7 @@ const AdminManagement: React.FC = () => {
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-blue-900 text-white px-4 py-2 rounded-lg dark:bg-transparent dark:border border-gray-700  flex items-center gap-2 hover:bg-blue-700 transition-colors"
+              className="bg-blue-950 text-white px-4 py-2 rounded-lg dark:bg-transparent dark:border border-gray-700  flex items-center gap-2 hover:bg-blue-900 transition-colors"
             >
               <UserPlus size={18} /> Add Admin
             </button>

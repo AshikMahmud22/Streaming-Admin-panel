@@ -135,7 +135,7 @@ export default function GiftingManager() {
         
         <button
           onClick={() => { setEditData(null); setIsModalOpen(true); }}
-          className="dark:bg-blue-950 dark:hover:bg-blue-900 dark:text-white  md:px-8 md:py-4 rounded-2xl font-semibold px-4 py-4 flex border dark:border-none items-center gap-2 dark:md:shadow-xl dark:shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+          className="  dark:text-white  md:px-8 md:py-4 rounded-2xl font-semibold px-4 py-4 flex border  items-center gap-2 active:scale-95 transition-all dark:border-gray-800 "
         >
           <Plus size={20} /> Add New Gift
         </button>
