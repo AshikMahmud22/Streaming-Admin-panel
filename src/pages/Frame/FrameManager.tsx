@@ -24,6 +24,8 @@ export interface FrameAsset {
   type: "png" | "svga";
   category: string;
   subCategory?: string;
+  tier?: "free" | "premium";
+  price?: number;
   createdAt?: Timestamp;
 }
 
@@ -34,6 +36,7 @@ export default function FrameManager() {
   const [isUploading, setIsUploading] = useState(false);
   const [editData, setEditData] = useState<FrameAsset | null>(null);
   const [filter, setFilter] = useState("All categories");
+  const [tierFilter, setTierFilter] = useState("All");
   const [selectedFrameId, setSelectedFrameId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -55,6 +58,10 @@ export default function FrameManager() {
     return () => unsubscribe();
   }, []);
 
+  const categories = Array.from(
+    new Set(frames.map((f) => f.subCategory).filter(Boolean))
+  ) as string[];
+
   const handleUpload = async (file: File): Promise<string> => {
     const data = new FormData();
     data.append("file", file);
@@ -75,12 +82,15 @@ export default function FrameManager() {
       let finalUrl = editData?.imageURL || "";
       if (file) finalUrl = await handleUpload(file);
 
+      const tier = formData.tier || "free";
       const payload = {
         name: formData.name,
         imageURL: finalUrl,
         type: formData.type,
         category: "Frame",
         subCategory: formData.category,
+        tier,
+        price: tier === "free" ? 0 : Number(formData.price || 0),
         isActive: true,
         updatedAt: serverTimestamp(),
       };
@@ -123,7 +133,11 @@ export default function FrameManager() {
     ));
   };
 
-  const filtered = frames.filter(f => filter === "All categories" || f.subCategory === filter);
+  const filtered = frames.filter((f) => {
+    const categoryMatch = filter === "All categories" || f.subCategory === filter;
+    const tierMatch = tierFilter === "All" || f.tier === tierFilter;
+    return categoryMatch && tierMatch;
+  });
 
   return (
     <div className="min-h-screen">
@@ -134,14 +148,55 @@ export default function FrameManager() {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+        <div className="p-6 rounded-2xl border dark:border-gray-800">
+          <p className="text-gray-500 text-xs font-bold uppercase mb-1">Total</p>
+          <h2 className="text-3xl font-semibold dark:text-white text-black">{frames.length}</h2>
+        </div>
+        <div className="p-6 rounded-2xl border dark:border-gray-800">
+          <p className="text-gray-500 text-xs font-bold uppercase mb-1">Categories</p>
+          <h2 className="text-3xl font-semibold dark:text-white text-black">{categories.length}</h2>
+        </div>
+        <div className="p-6 rounded-2xl border dark:border-gray-800">
+          <p className="text-gray-500 text-xs font-bold uppercase mb-1">Free</p>
+          <h2 className="text-3xl font-semibold text-green-500">
+            {frames.filter((f) => f.tier === "free" || !f.tier).length}
+          </h2>
+        </div>
+        <div className="p-6 rounded-2xl border dark:border-gray-800">
+          <p className="text-gray-500 text-xs font-bold uppercase mb-1">Premium</p>
+          <h2 className="text-3xl font-semibold text-yellow-500">
+            {frames.filter((f) => f.tier === "premium").length}
+          </h2>
+        </div>
+      </div>
+
       <div className="mb-8 flex gap-3 justify-between items-center flex-wrap">
-        <select className="w-full p-3 border dark:border-gray-800 rounded-xl outline-none text-sm bg-transparent dark:text-white text-black md:max-w-xs" value={filter} onChange={(e) => setFilter(e.target.value)}>
-          <option className="text-black" value="All categories">All categories</option>
-          <option className="text-black" value="Basic">Basic</option>
-          <option className="text-black" value="Premium">Premium</option>
-          <option className="text-black" value="Event">Event</option>
-        </select>
-        <button onClick={() => { setEditData(null); setIsModalOpen(true); }} className="dark:bg-black dark:text-white border dark:border-gray-800 bg-white text-black px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2">
+        <div className="flex gap-3">
+          <select
+            className="p-3 border dark:border-gray-800 rounded-xl outline-none text-sm bg-transparent dark:text-white text-black"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            <option className="text-black" value="All categories">All categories</option>
+            {categories.map((cat) => (
+              <option key={cat} className="text-black" value={cat}>{cat}</option>
+            ))}
+          </select>
+          <select
+            className="p-3 border dark:border-gray-800 rounded-xl outline-none text-sm bg-transparent dark:text-white text-black"
+            value={tierFilter}
+            onChange={(e) => setTierFilter(e.target.value)}
+          >
+            <option className="text-black" value="All">All tiers</option>
+            <option className="text-black" value="free">Free</option>
+            <option className="text-black" value="premium">Premium</option>
+          </select>
+        </div>
+        <button
+          onClick={() => { setEditData(null); setIsModalOpen(true); }}
+          className="dark:bg-black dark:text-white border dark:border-gray-800 bg-white text-black px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2"
+        >
           <Plus size={18} /> Add Frame
         </button>
       </div>

@@ -19,7 +19,11 @@ export const UserCard = ({ user, isSelected, onSelect }: UserCardProps) => {
     >
       <div className="relative shrink-0">
         {user.photoUrl ? (
-          <img src={user.photoUrl} className="w-14 h-14 rounded-full object-cover border-2 border-transparent group-hover:border-blue-400" alt="" />
+          <img
+            src={user.photoUrl}
+            className="w-14 h-14 rounded-full object-cover border-2 border-transparent"
+            alt=""
+          />
         ) : (
           <div className="w-14 h-14 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-400">
             <User size={24} />
@@ -27,14 +31,22 @@ export const UserCard = ({ user, isSelected, onSelect }: UserCardProps) => {
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="font-bold text-sm md:text-base dark:text-white truncate">{user.displayName}</h4>
-        <p className="text-xs text-gray-500 font-medium truncate">ID: {user.displayId}</p>
-        <p className="text-[10px] text-gray-400 truncate hidden sm:block">{user.email}</p>
+        <h4 className="font-bold text-sm md:text-base dark:text-white truncate">
+          {user.displayName || "Unknown User"}
+        </h4>
+        <p className="text-xs text-gray-500 font-medium truncate">
+          ID: {user.displayId || user.uid}
+        </p>
+        <p className="text-[10px] text-gray-400 truncate hidden sm:block">
+          {user.email}
+        </p>
       </div>
       <div className="text-right shrink-0">
         <div className="bg-orange-50 dark:bg-orange-950/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
           <Coins size={14} className="text-orange-500" />
-          <span className="text-sm font-black text-orange-600 dark:text-orange-400">{user.balance}</span>
+          <span className="text-sm font-black text-orange-600 dark:text-orange-400">
+            {user.balance ?? 0}
+          </span>
         </div>
       </div>
     </div>

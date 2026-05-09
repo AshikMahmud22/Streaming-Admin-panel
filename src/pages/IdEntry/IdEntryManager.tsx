@@ -24,6 +24,8 @@ export interface IdEntry {
   type: "png" | "svga";
   category: string;
   subCategory?: string;
+  tier?: "free" | "premium";
+  price?: number;
   createdAt?: Timestamp;
 }
 
@@ -34,6 +36,7 @@ export default function IdEntryManager() {
   const [isUploading, setIsUploading] = useState(false);
   const [editData, setEditData] = useState<IdEntry | null>(null);
   const [filter, setFilter] = useState("All categories");
+  const [tierFilter, setTierFilter] = useState("All");
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,16 +44,12 @@ export default function IdEntryManager() {
     const unsubscribe = onSnapshot(
       q,
       (snap) => {
-        const data = snap.docs.map(
-          (d) => ({ id: d.id, ...d.data() }) as IdEntry,
-        );
-
+        const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as IdEntry);
         const sortedData = data.sort((a, b) => {
           const timeA = a.createdAt?.toMillis() || Date.now();
           const timeB = b.createdAt?.toMillis() || Date.now();
           return timeB - timeA;
         });
-
         setEntries(sortedData);
         setLoading(false);
       },
@@ -63,26 +62,24 @@ export default function IdEntryManager() {
     return () => unsubscribe();
   }, []);
 
+  const categories = Array.from(
+    new Set(entries.map((e) => e.subCategory).filter(Boolean))
+  ) as string[];
+
   const handleUpload = async (file: File): Promise<string> => {
     const data = new FormData();
     data.append("file", file);
     data.append("upload_preset", import.meta.env.VITE_CLOUDINARY_PRESET);
     const res = await fetch(
       `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/upload`,
-      {
-        method: "POST",
-        body: data,
-      },
+      { method: "POST", body: data },
     );
     const result = await res.json();
     if (!res.ok) throw new Error("Upload failed");
     return result.secure_url;
   };
 
-  const handleSubmit = async (
-    formData: Partial<IdEntry>,
-    file: File | null,
-  ) => {
+  const handleSubmit = async (formData: Partial<IdEntry>, file: File | null) => {
     setIsUploading(true);
     const tid = toast.loading("Processing...");
     try {
@@ -95,6 +92,8 @@ export default function IdEntryManager() {
         type: formData.type,
         category: "IdEntry",
         subCategory: formData.category,
+        tier: formData.tier || "free",
+        price: formData.tier === "premium" ? (formData.price ?? 0) : 0,
         isActive: true,
         updatedAt: serverTimestamp(),
       };
@@ -112,8 +111,7 @@ export default function IdEntryManager() {
       }
       setIsModalOpen(false);
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : "Error occurred";
-      toast.error(errorMessage, { id: tid });
+      toast.error(e instanceof Error ? e.message : "Error occurred", { id: tid });
     } finally {
       setIsUploading(false);
     }
@@ -122,9 +120,7 @@ export default function IdEntryManager() {
   const confirmDelete = (id: string) => {
     toast((t) => (
       <div className="flex flex-col gap-3">
-        <p className="text-sm font-medium dark:text-white text-gray-900">
-          Remove this ID Entry?
-        </p>
+        <p className="text-sm font-medium dark:text-white text-gray-900">Remove this ID Entry?</p>
         <div className="flex gap-2">
           <button
             onClick={async () => {
@@ -152,47 +148,68 @@ export default function IdEntryManager() {
     ));
   };
 
-  const filtered = entries.filter(
-    (e) => filter === "All categories" || e.subCategory === filter,
-  );
+  const filtered = entries.filter((e) => {
+    const categoryMatch = filter === "All categories" || e.subCategory === filter;
+    const tierMatch = tierFilter === "All" || e.tier === tierFilter;
+    return categoryMatch && tierMatch;
+  });
 
   return (
-    <div className=" min-h-screen">
+    <div className="min-h-screen">
       <div className="flex justify-between items-end mb-10">
         <div>
-          <h1 className="text-2xl font-bold dark:text-white text-black">
-            ID Entry Assets
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Manage SVGA and PNG entry effects
-          </p>
+          <h1 className="text-2xl font-bold dark:text-white text-black">ID Entry Assets</h1>
+          <p className="text-gray-500 text-sm mt-1">Manage SVGA and PNG entry effects</p>
         </div>
       </div>
 
-      <div className="mb-8 flex gap-3 text-nowrap justify-between items-center ">
-        <select
-          className="w-full p-3 border dark:border-gray-800 rounded-xl outline-none text-sm bg-transparent dark:text-white text-black cursor-pointer md:max-w-xs"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        >
-          <option className="text-black" value="All categories">
-            All categories
-          </option>
-          <option className="text-black" value="Vip">
-            Vip
-          </option>
-          <option className="text-black" value="Luxury">
-            Luxury
-          </option>
-          <option className="text-black" value="Special">
-            Special
-          </option>
-        </select>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+        <div className="p-6 rounded-2xl border dark:border-gray-800">
+          <p className="text-gray-500 text-xs font-bold uppercase mb-1">Total</p>
+          <h2 className="text-3xl font-semibold dark:text-white text-black">{entries.length}</h2>
+        </div>
+        <div className="p-6 rounded-2xl border dark:border-gray-800">
+          <p className="text-gray-500 text-xs font-bold uppercase mb-1">Categories</p>
+          <h2 className="text-3xl font-semibold dark:text-white text-black">{categories.length}</h2>
+        </div>
+        <div className="p-6 rounded-2xl border dark:border-gray-800">
+          <p className="text-gray-500 text-xs font-bold uppercase mb-1">Free</p>
+          <h2 className="text-3xl font-semibold text-green-500">
+            {entries.filter((e) => e.tier === "free" || !e.tier).length}
+          </h2>
+        </div>
+        <div className="p-6 rounded-2xl border dark:border-gray-800">
+          <p className="text-gray-500 text-xs font-bold uppercase mb-1">Premium</p>
+          <h2 className="text-3xl font-semibold text-yellow-500">
+            {entries.filter((e) => e.tier === "premium").length}
+          </h2>
+        </div>
+      </div>
+
+      <div className="mb-8 flex gap-3 text-nowrap justify-between items-center">
+        <div className="flex gap-3">
+          <select
+            className="p-3 border dark:border-gray-800 rounded-xl outline-none text-sm bg-transparent dark:text-white text-black cursor-pointer"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            <option className="text-black" value="All categories">All categories</option>
+            {categories.map((cat) => (
+              <option key={cat} className="text-black" value={cat}>{cat}</option>
+            ))}
+          </select>
+          <select
+            className="p-3 border dark:border-gray-800 rounded-xl outline-none text-sm bg-transparent dark:text-white text-black cursor-pointer"
+            value={tierFilter}
+            onChange={(e) => setTierFilter(e.target.value)}
+          >
+            <option className="text-black" value="All">All tiers</option>
+            <option className="text-black" value="free">Free</option>
+            <option className="text-black" value="premium">Premium</option>
+          </select>
+        </div>
         <button
-          onClick={() => {
-            setEditData(null);
-            setIsModalOpen(true);
-          }}
+          onClick={() => { setEditData(null); setIsModalOpen(true); }}
           className="dark:bg-black dark:text-white text-black px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 border dark:border-gray-800 bg-white"
         >
           <Plus size={18} /> Add Entry
@@ -209,10 +226,7 @@ export default function IdEntryManager() {
             <IdEntryCard
               key={entry.id}
               entry={entry}
-              onEdit={(e) => {
-                setEditData(e);
-                setIsModalOpen(true);
-              }}
+              onEdit={(e) => { setEditData(e); setIsModalOpen(true); }}
               onDelete={confirmDelete}
               isSelected={selectedEntryId === entry.id}
               onSelect={() => setSelectedEntryId(selectedEntryId === entry.id ? null : entry.id)}

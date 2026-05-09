@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { db } from "../../lib/firebase";
 import { collection, doc, addDoc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { Upload, Loader2, X, Image as ImageIcon } from "lucide-react";
+import { Upload, Loader2, X, Image as ImageIcon, Coins } from "lucide-react";
 import toast from "react-hot-toast";
 import { LevelBadge } from "./LevelBadgeManager";
 
@@ -15,8 +15,12 @@ export default function BadgeModal({ onClose, editingBadge }: BadgeModalProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [level, setLevel] = useState(editingBadge?.level.toString() || "");
   const [name, setName] = useState(editingBadge?.name || "");
+  const [tier, setTier] = useState<"free" | "premium">(editingBadge?.tier || "free");
+  const [price, setPrice] = useState<number>(editingBadge?.price ?? 0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>(editingBadge?.imageURL || "");
+
+  const isPremium = tier === "premium";
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -55,6 +59,8 @@ export default function BadgeModal({ onClose, editingBadge }: BadgeModalProps) {
         name: name || `Level ${level}`,
         imageURL: finalUrl,
         category: "LevelBadge",
+        tier,
+        price: isPremium ? price : 0,
         isActive: true,
         updatedAt: serverTimestamp(),
       };
@@ -128,6 +134,46 @@ export default function BadgeModal({ onClose, editingBadge }: BadgeModalProps) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-black text-gray-500 uppercase ml-1">Tier</label>
+                <select
+                  className="w-full mt-1.5 p-4 rounded-2xl border dark:border-gray-800 bg-transparent dark:text-white outline-none focus:ring-2 ring-blue-500 font-bold appearance-none cursor-pointer"
+                  value={tier}
+                  onChange={(e) => {
+                    const val = e.target.value as "free" | "premium";
+                    setTier(val);
+                    if (val === "free") setPrice(0);
+                  }}
+                >
+                  <option className="text-black" value="free">Free</option>
+                  <option className="text-black" value="premium">Premium</option>
+                </select>
+              </div>
+              <div>
+                <label className={`text-xs font-black uppercase ml-1 ${isPremium ? "text-yellow-500" : "text-gray-400"}`}>
+                  Coin Price
+                </label>
+                <div className={`relative mt-1.5 flex items-center border rounded-2xl transition-all ${
+                  isPremium
+                    ? "dark:border-yellow-600 border-yellow-400"
+                    : "dark:border-gray-800 border-gray-200 opacity-50"
+                }`}>
+                  <Coins size={16} className={`absolute left-3 ${isPremium ? "text-yellow-500" : "text-gray-400"}`} />
+                  <input
+                    type="number"
+                    min={0}
+                    disabled={!isPremium}
+                    placeholder="0"
+                    className={`w-full pl-9 pr-4 py-4 rounded-2xl outline-none bg-transparent dark:text-white font-bold transition-all ${
+                      !isPremium ? "cursor-not-allowed" : ""
+                    }`}
+                    value={isPremium ? (price === 0 ? "" : price) : ""}
+                    onChange={(e) => setPrice(e.target.value === "" ? 0 : Number(e.target.value))}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 

@@ -34,21 +34,32 @@ export default function CoinManager() {
 
   useEffect(() => {
     const q = query(collection(db, "users"));
-    const unsubscribe = onSnapshot(q, (snap) => {
-      const data = snap.docs.map((d) => d.data() as UserInfo);
-      setUsers(data);
-      setLoading(false);
-    }, () => {
-      toast.error("Failed to sync users");
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => {
+        const data = snap.docs.map((d) => {
+          const docData = d.data();
+          return {
+            ...docData,
+            uid: d.id,
+          } as UserInfo;
+        });
+        setUsers(data);
+        setLoading(false);
+      },
+      () => {
+        toast.error("Failed to sync users");
+        setLoading(false);
+      }
+    );
     return () => unsubscribe();
   }, []);
 
-  const filteredUsers = users.filter((u) =>
-    u.displayId?.includes(searchId) || 
-    u.email?.toLowerCase().includes(searchId.toLowerCase()) ||
-    u.displayName?.toLowerCase().includes(searchId.toLowerCase())
+  const filteredUsers = users.filter(
+    (u) =>
+      u.displayId?.includes(searchId) ||
+      u.email?.toLowerCase().includes(searchId.toLowerCase()) ||
+      u.displayName?.toLowerCase().includes(searchId.toLowerCase())
   );
 
   return (
@@ -58,7 +69,6 @@ export default function CoinManager() {
           <h1 className="text-2xl font-bold dark:text-white text-black">User Coin Management</h1>
           <p className="text-gray-500 text-sm mt-1">Manage balances and resets</p>
         </div>
-
         <div className="relative max-w-4xl">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <input
@@ -79,11 +89,11 @@ export default function CoinManager() {
             </div>
           ) : (
             filteredUsers.map((user) => (
-              <UserCard 
-                key={user.uid} 
-                user={user} 
-                isSelected={selectedUser?.uid === user.uid} 
-                onSelect={setSelectedUser} 
+              <UserCard
+                key={user.uid}
+                user={user}
+                isSelected={selectedUser?.uid === user.uid}
+                onSelect={setSelectedUser}
               />
             ))
           )}
@@ -91,13 +101,13 @@ export default function CoinManager() {
       </div>
 
       {selectedUser && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center lg:pl-60 dark:bg-black/80 bg-black/20  backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div 
-            className="absolute inset-0" 
-            onClick={() => setSelectedUser(null)} 
-          />
+        <div className="fixed inset-0 z-40 flex items-center justify-center lg:pl-60 dark:bg-black/80 bg-black/20 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setSelectedUser(null)} />
           <div className="relative w-full max-w-lg animate-in zoom-in-95 duration-200">
-             <ActionPanel selectedUser={selectedUser} onClose={() => setSelectedUser(null)} />
+            <ActionPanel
+              selectedUser={selectedUser}
+              onClose={() => setSelectedUser(null)}
+            />
           </div>
         </div>
       )}
